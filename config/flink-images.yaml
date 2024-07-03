@@ -1,1 +1,1 @@
-apache/flink: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
+apache/flink:/^1.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"

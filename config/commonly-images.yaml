@@ -13,3 +13,4 @@ bitnami/kafka:2.7.0-debian-10-r64: "registry.cn-shanghai.aliyuncs.com/ahoo/bitna
 bitnami/rabbitmq:3.11.16-debian-11-r3: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:rabbitmq_3.11.16-debian-11-r3"
 bitnami/zookeeper:3.8.1-debian-11-r36: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:zookeeper_3.8.1-debian-11-r36"
 bitnami/mongodb-sharded:6.0.13-debian-11-r20: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mongodb-sharded_6.0.13-debian-11-r20"
+bitnami/mysql:8.0.31-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mysql_8.0.31-debian-11-r0"

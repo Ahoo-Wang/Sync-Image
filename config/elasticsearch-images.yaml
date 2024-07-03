@@ -1,1 +1,2 @@
-docker.elastic.co/elasticsearch/elasticsearch: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch"
+docker.elastic.co/elasticsearch/elasticsearch:/^7.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch"
+docker.elastic.co/elasticsearch/elasticsearch:/^8.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch"

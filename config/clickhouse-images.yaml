@@ -1,1 +1,3 @@
-clickhouse/clickhouse-server: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
+clickhouse/clickhouse-server:/^22.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
+clickhouse/clickhouse-server:/^23.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
+clickhouse/clickhouse-server:/^24.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"

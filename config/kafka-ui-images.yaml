@@ -1,1 +1,1 @@
-provectuslabs/kafka-ui: "registry.cn-shanghai.aliyuncs.com/ahoo/kafka-ui"
+provectuslabs/kafka-ui:/^v0.7.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/kafka-ui"
