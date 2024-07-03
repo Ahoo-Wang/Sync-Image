@@ -5,8 +5,8 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  Sync:
-    name: Sync
+  SyncCommonlyImage:
+    name: Sync Commonly Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,6 +21,13 @@ jobs:
           auth_file: ./config/auth.yaml
           images_file: ./config/commonly-images.yaml
           version: latest
+  SyncClickHouseImage:
+    name: Sync ClickHouse Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Sync ClickHouse Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
@@ -30,6 +37,13 @@ jobs:
           auth_file: ./config/auth.yaml
           images_file: ./config/clickhouse-images.yaml
           version: latest
+  SyncElasticSearchImage:
+    name: Sync ElasticSearch Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Sync ElasticSearch Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
@@ -39,6 +53,13 @@ jobs:
           auth_file: ./config/auth.yaml
           images_file: ./config/elasticsearch-images.yaml
           version: latest
+  SyncKibanaImage:
+    name: Sync Kibana Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Sync Kibana Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
@@ -48,6 +69,13 @@ jobs:
           auth_file: ./config/auth.yaml
           images_file: ./config/kibana-images.yaml
           version: latest
+  SyncFlinkImage:
+    name: Sync Flink Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Sync Flink Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
@@ -57,6 +85,13 @@ jobs:
           auth_file: ./config/auth.yaml
           images_file: ./config/flink-images.yaml
           version: latest
+  SyncKafkaUIImage:
+    name: Sync Kafka-UI Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Sync Kafka-UI Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
