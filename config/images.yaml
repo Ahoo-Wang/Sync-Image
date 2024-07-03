@@ -1,9 +1,9 @@
 # busybox
-busybox:1.35: registry.cn-shanghai.aliyuncs.com/ahoo/busybox
+busybox:1.35: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 # signoz
-groundnuty/k8s-wait-for:v2.0: registry.cn-shanghai.aliyuncs.com/ahoo/signoz
-signoz/frontend:0.48.1: registry.cn-shanghai.aliyuncs.com/ahoo/signoz
-signoz/signoz-otel-collector:0.102.0: registry.cn-shanghai.aliyuncs.com/ahoo/signoz
-signoz/alertmanager:0.23.5: registry.cn-shanghai.aliyuncs.com/ahoo/signoz
-signoz/query-service:0.48.1: registry.cn-shanghai.aliyuncs.com/ahoo/signoz
+groundnuty/k8s-wait-for:v2.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz"
+signoz/frontend:0.48.1: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz"
+signoz/signoz-otel-collector:0.102.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz"
+signoz/alertmanager:0.23.5: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz"
+signoz/query-service:0.48.1: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz"
 
