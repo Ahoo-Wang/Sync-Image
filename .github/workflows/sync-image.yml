@@ -2,7 +2,7 @@ name: Sync Image
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 jobs:
   Sync:
