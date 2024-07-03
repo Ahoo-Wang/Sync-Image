@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Sync Image
-        uses: hhyasdf/image-sync-action@v1
+        uses: hhyasdf/image-sync-action@v1.1
         env:
           ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
           ALIYUN_CR_PASSWORD: ${{ secrets.ALIYUN_CR_PASSWORD }}
