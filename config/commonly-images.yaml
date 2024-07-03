@@ -13,12 +13,3 @@ bitnami/kafka:2.7.0-debian-10-r64: "registry.cn-shanghai.aliyuncs.com/ahoo/bitna
 bitnami/rabbitmq:3.11.16-debian-11-r3: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:rabbitmq_3.11.16-debian-11-r3"
 bitnami/zookeeper:3.8.1-debian-11-r36: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:zookeeper_3.8.1-debian-11-r36"
 bitnami/mongodb-sharded:6.0.13-debian-11-r20: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mongodb-sharded_6.0.13-debian-11-r20"
-# clickhouse
-clickhouse/clickhouse-server: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-# elasticsearch
-docker.elastic.co/elasticsearch/elasticsearch: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch"
-docker.elastic.co/kibana/kibana: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana"
-# flink
-apache/flink: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
-# kafka-ui
-provectuslabs/kafka-ui: "registry.cn-shanghai.aliyuncs.com/ahoo/kafka-ui"
