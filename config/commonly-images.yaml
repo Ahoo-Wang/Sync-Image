@@ -1,5 +1,6 @@
 # busybox
 busybox:1.35: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
+busybox:1.30: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 # signoz
 groundnuty/k8s-wait-for:v2.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:k8s-wait-for_v2.0"
 signoz/signoz-schema-migrator:0.102.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:signoz-schema-migrator_0.102.0"
