@@ -1,2 +1,2 @@
 # otel
-otel/autoinstrumentation-java:2.5.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.5.0"
+otel/autoinstrumentation-java:2.9.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.9.0"
