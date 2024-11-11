@@ -1,2 +1,4 @@
 # otel
 otel/autoinstrumentation-java:2.9.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.9.0"
+ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.113.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:opentelemetry-operator_0.113.0"
+gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:kube-rbac-proxy_v0.13.1"
