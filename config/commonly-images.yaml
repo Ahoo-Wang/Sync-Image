@@ -23,3 +23,5 @@ clickhouse/clickhouse-server:24.1.2-alpine: "registry.cn-shanghai.aliyuncs.com/a
 # metabase
 metabase/metabase:v0.42.4: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 metabase/metabase:v0.52.4.4: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
+# nginx
+nginx:1.27.3-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/nginx"
