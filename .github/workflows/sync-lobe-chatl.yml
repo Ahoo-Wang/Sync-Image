@@ -2,8 +2,8 @@ name: Sync Lobe Chat Image
 on:
   workflow_dispatch:
 jobs:
-  SyncOpenTelemetryImage:
-    name: Sync OpenTelemetry Image
+  SyncLobeChatImage:
+    name: Sync Lobe Chat Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
