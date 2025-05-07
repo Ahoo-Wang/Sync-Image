@@ -1,5 +1,5 @@
 # clickhouse/clickhouse-server:/^22.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
 # clickhouse/clickhouse-server:/^23.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:/^24.3.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:/^24.8.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
+# clickhouse/clickhouse-server:/^24.3.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
+# clickhouse/clickhouse-server:/^24.8.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
 clickhouse/clickhouse-server:/^25.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
