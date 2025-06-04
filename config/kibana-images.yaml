@@ -1,2 +1,2 @@
-docker.elastic.co/kibana/kibana:/^7.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana"
-docker.elastic.co/kibana/kibana:/^8.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana"
+docker.elastic.co/kibana/kibana:8.18.1: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana:8.18.1"
+docker.elastic.co/kibana/kibana:8.18.2: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana:8.18.2"
