@@ -1,0 +1,2 @@
+altinity/metrics-exporter:0.19.2: "registry.cn-shanghai.aliyuncs.com/ahoo/altinity:metrics_exporter:0.19.2"
+altinity/clickhouse-operator:0.19.2: "registry.cn-shanghai.aliyuncs.com/ahoo/altinity:clickhouse_operator:0.19.2"
