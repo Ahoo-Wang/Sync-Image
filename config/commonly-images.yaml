@@ -21,8 +21,5 @@ bitnami/mysql:8.0.31-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitna
 bitnamilegacy/wordpress:6.3.2-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:wordpress_6.3.2-debian-11-r0"
 # clickhouse
 clickhouse/clickhouse-server:24.1.2-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-# metabase
-metabase/metabase:v0.42.4: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
-metabase/metabase:v0.52.4.4: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 # nginx
 nginx:1.27.3-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/nginx"
