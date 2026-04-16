@@ -1,15 +1,15 @@
-name: Sync Commonly Image
+name: Sync Metabase Image
 on:
   workflow_dispatch:
 jobs:
-  SyncCommonlyImage:
-    name: Sync Commonly Image
+  SyncMetabaseImage:
+    name: Sync Metabase Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
 
-      - name: Sync Commonly Image
+      - name: Sync Metabase Image
         uses: hhyasdf/image-sync-action@v1.1
         env:
           ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
