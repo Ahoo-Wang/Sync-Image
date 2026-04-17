@@ -13,7 +13,7 @@ signoz/query-service:0.48.1: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:quer
 # bitnami
 bitnamilegacy/redis-cluster:7.0.5-debian-11-r9: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:redis-cluster_7.0.5-debian-11-r9"
 bitnamilegacy/kafka:3.3.1-debian-11-r1: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:kafka_3.3.1-debian-11-r1"
-bitnamilegacy/kafka:2.7.0-debian-10-r64: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:kafka_2.7.0-debian-10-r64"
+# bitnamilegacy/kafka:2.7.0-debian-10-r64: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:kafka_2.7.0-debian-10-r64"
 bitnamilegacy/rabbitmq:3.11.16-debian-11-r3: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:rabbitmq_3.11.16-debian-11-r3"
 bitnamilegacy/zookeeper:3.8.1-debian-11-r36: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:zookeeper_3.8.1-debian-11-r36"
 bitnamilegacy/mongodb-sharded:6.0.13-debian-11-r20: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mongodb-sharded_6.0.13-debian-11-r20"
