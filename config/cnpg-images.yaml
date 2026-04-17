@@ -1,2 +1,5 @@
 ghcr.io/cloudnative-pg/cloudnative-pg:1.29.0:"registry.cn-shanghai.aliyuncs.com/ahoo/cnpg"
+ghcr.io/cloudnative-pg/postgresql:15.14-system-trixie:"registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_15.14-system-trixie"
+ghcr.io/cloudnative-pg/postgresql:16.10-system-trixie:"registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_16.10-system-trixie"
+ghcr.io/cloudnative-pg/postgresql:17.6-system-trixie:"registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_17.6-system-trixie"
 ghcr.io/cloudnative-pg/postgresql:18.3-system-trixie:"registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_18.3-system-trixie"
