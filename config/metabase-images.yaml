@@ -38,3 +38,4 @@ metabase/metabase:v0.59.0.7-beta: "registry.cn-shanghai.aliyuncs.com/ahoo/metaba
 metabase/metabase:v0.59.7.1: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 metabase/metabase:v0.60.0.8-beta: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 metabase/metabase:v0.60.1.1: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
+metabase/metabase:v0.60.1.4: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
