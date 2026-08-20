@@ -8,6 +8,7 @@
   "rangeStrategy": "bump",
   "lockFileMaintenance": { "enabled": false },
   "prConcurrentLimit": 20,
+  "prHourlyLimit": 20,
   "customManagers": [
     {
       "description": "Update container image tags in config/*-images.yaml",
