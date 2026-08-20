@@ -21,6 +21,10 @@ concurrency:
   group: renovate
   cancel-in-progress: false
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   renovate:
     name: Renovate
@@ -33,10 +37,11 @@ jobs:
         uses: renovatebot/github-action@v46.1.15
         with:
           configurationFile: renovate.json
-          token: ${{ secrets.RENOVATE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          LOG_LEVEL: debug
+          LOG_LEVEL: info
           RENOVATE_REPOSITORIES: Ahoo-Wang/Sync-Image
+          RENOVATE_AUTODISCOVER: 'false'
           RENOVATE_ONBOARDING: 'false'
           RENOVATE_PLATFORM: github
           RENOVATE_REPOSITORY_CACHE: enabled

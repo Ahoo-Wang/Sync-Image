@@ -1,0 +1,50 @@
+name: Sync Images
+on:
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "Image group to sync"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - ahoo
+          - altinity
+          - clickhouse
+          - cnpg
+          - commonly
+          - elasticsearch
+          - flink
+          - kafka-ui
+          - kibana
+          - lobe-chat
+          - new-api
+          - otel
+  push:
+    branches: [main]
+    paths:
+      - "config/*-images.yaml"
+
+jobs:
+  sync:
+    name: Sync ${{ matrix.group }} images
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync ${{ matrix.group }} images
+        uses: hhyasdf/image-sync-action@v1.1
+        env:
+          ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
+          ALIYUN_CR_PASSWORD: ${{ secrets.ALIYUN_CR_PASSWORD }}
+        with:
+          auth_file: ./config/auth.yaml
+          images_file: ./config/${{ matrix.group }}-images.yaml
+          version: latest

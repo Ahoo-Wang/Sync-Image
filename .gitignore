@@ -2,3 +2,6 @@
 .idea/
 # Mac
 .DS_Store
+# Local tooling
+.claude/
+.mimosa/

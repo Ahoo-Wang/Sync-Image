@@ -8,16 +8,13 @@
   "rangeStrategy": "bump",
   "lockFileMaintenance": { "enabled": false },
   "prConcurrentLimit": 5,
-  "packageRules": [
+  "customManagers": [
     {
-      "description": "Group Spring ecosystem updates into a single PR",
-      "matchPackagePatterns": ["^org\\.springframework"],
-      "groupName": "spring"
-    },
-    {
-      "description": "Group Kotlin-related updates into a single PR",
-      "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin"],
-      "groupName": "kotlin"
+      "description": "Update container image tags in config/*-images.yaml",
+      "customType": "regex",
+      "fileMatch": ["^config/.*-images\\.yaml$"],
+      "matchStrings": ["^(?<depName>[^:\\s]+):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s"],
+      "datasourceTemplate": "docker"
     }
   ]
 }
