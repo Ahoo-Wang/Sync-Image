@@ -17,7 +17,7 @@ bitnamilegacy/kafka:3.6.1-debian-11-r1: "registry.cn-shanghai.aliyuncs.com/ahoo/
 bitnamilegacy/rabbitmq:3.11.16-debian-11-r3: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:rabbitmq_3.11.16-debian-11-r3"
 bitnamilegacy/zookeeper:3.8.1-debian-11-r36: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:zookeeper_3.8.1-debian-11-r36"
 bitnamilegacy/mongodb-sharded:6.0.13-debian-11-r20: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mongodb-sharded_6.0.13-debian-11-r20"
-bitnamilegacy/mysql:8.0.31-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mysql_8.0.31-debian-11-r0"
+bitnamilegacy/mysql:8.3.0-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mysql_8.3.0-debian-11-r0"
 bitnamilegacy/mysql:8.4.5-debian-12-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:mysql_8.4.5-debian-12-r0"
 bitnamilegacy/wordpress:6.3.2-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:wordpress_6.3.2-debian-11-r0"
 # clickhouse
