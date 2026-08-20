@@ -7,7 +7,7 @@
   "commitMessageTopic": "{{depName}}",
   "rangeStrategy": "bump",
   "lockFileMaintenance": { "enabled": false },
-  "prConcurrentLimit": 5,
+  "prConcurrentLimit": 20,
   "customManagers": [
     {
       "description": "Update container image tags in config/*-images.yaml",
