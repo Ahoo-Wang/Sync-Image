@@ -9,15 +9,15 @@
   "lockFileMaintenance": { "enabled": false },
   "prConcurrentLimit": 20,
   "prHourlyLimit": 20,
+  "autoReplaceGlobalMatch": true,
   "customManagers": [
     {
-      "description": "Update container image tags in config/*-images.yaml; rebuilds the whole mapping line so the destination tag version follows the source tag",
+      "description": "Update container image tags in config/*-images.yaml; with autoReplaceGlobalMatch the version is replaced in both the source tag and the destination tag",
       "customType": "regex",
       "fileMatch": ["^config/.*-images\\.yaml$"],
       "matchStrings": [
-        "(?m)^(?<depName>[^:\\s]+):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s\"(?<dstRepo>[^\":]+)(?::(?<dstPrefix>[^\"0-9]*)(?<dstVersion>[0-9][^\"]*))?\"\\s*$"
+        "(?m)^(?<depName>[^\\s:#][^:\\s]*):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s\"[^\"]*\"\\s*$"
       ],
-      "autoReplaceStringTemplate": "{{depName}}:{{newValue}}: \"{{#if dstVersion}}{{dstRepo}}:{{dstPrefix}}{{newValue}}{{else}}{{dstRepo}}{{/if}}\"",
       "datasourceTemplate": "docker"
     }
   ]
