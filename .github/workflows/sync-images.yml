@@ -30,16 +30,17 @@ jobs:
   sync:
     name: Sync ${{ matrix.group }} images
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
     strategy:
       fail-fast: false
       matrix:
         group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel]
     steps:
       - name: Checkout
+        if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
         uses: actions/checkout@v4
 
       - name: Sync ${{ matrix.group }} images
+        if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
         uses: hhyasdf/image-sync-action@v1.1
         env:
           ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
