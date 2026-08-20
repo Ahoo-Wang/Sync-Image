@@ -11,10 +11,13 @@
   "prHourlyLimit": 20,
   "customManagers": [
     {
-      "description": "Update container image tags in config/*-images.yaml",
+      "description": "Update container image tags in config/*-images.yaml; rebuilds the whole mapping line so the destination tag version follows the source tag",
       "customType": "regex",
       "fileMatch": ["^config/.*-images\\.yaml$"],
-      "matchStrings": ["^(?<depName>[^:\\s]+):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s"],
+      "matchStrings": [
+        "^(?<depName>[^:\\s]+):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s\"(?<dstRepo>[^\":]+)(?::(?<dstPrefix>[^\"0-9]*)(?<dstVersion>[0-9][^\"]*))?\"\\s*$"
+      ],
+      "autoReplaceStringTemplate": "{{depName}}:{{newValue}}: \"{{#if dstVersion}}{{dstRepo}}:{{dstPrefix}}{{newValue}}{{else}}{{dstRepo}}{{/if}}\"",
       "datasourceTemplate": "docker"
     }
   ]

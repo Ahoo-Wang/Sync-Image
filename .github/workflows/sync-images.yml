@@ -73,4 +73,4 @@ jobs:
         with:
           auth_file: ./config/auth.yaml
           images_file: ./config/${{ matrix.group }}-images.yaml
-          version: latest
+          version: v1.5.5
