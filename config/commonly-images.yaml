@@ -11,7 +11,7 @@ signoz/signoz-otel-collector:0.102.0: "registry.cn-shanghai.aliyuncs.com/ahoo/si
 signoz/alertmanager:0.23.9: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:alertmanager_0.23.9"
 signoz/query-service:0.48.1: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:query-service_0.48.1"
 # bitnami
-bitnamilegacy/redis-cluster:7.0.5-debian-11-r9: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:redis-cluster_7.0.5-debian-11-r9"
+bitnamilegacy/redis-cluster:7.2.4-debian-11-r9: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:redis-cluster_7.2.4-debian-11-r9"
 bitnamilegacy/kafka:3.6.1-debian-11-r1: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:kafka_3.6.1-debian-11-r1"
 # bitnamilegacy/kafka:2.7.0-debian-10-r64: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:kafka_2.7.0-debian-10-r64"
 bitnamilegacy/rabbitmq:3.12.12-debian-11-r3: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:rabbitmq_3.12.12-debian-11-r3"
