@@ -26,10 +26,18 @@ on:
     paths:
       - "config/*-images.yaml"
 
+env:
+  REGCTL_VERSION: v0.11.5
+
 jobs:
   sync:
     name: Sync ${{ matrix.group }} images
     runs-on: ubuntu-latest
+    # REGCTL_GROUPS sync via scripts/sync-image.sh (strips OCI attestation
+    # manifests that Aliyun ACR rejects); the rest via image-syncer.
+    env:
+      SELECTED: ${{ github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group }}
+      REGCTL_GROUPS: cnpg
     concurrency:
       group: sync-images-${{ matrix.group }}
       cancel-in-progress: true
@@ -39,11 +47,25 @@ jobs:
         group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel]
     steps:
       - name: Checkout
-        if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
+        if: env.SELECTED == 'true'
         uses: actions/checkout@v4
 
+      - name: Setup regctl
+        if: env.SELECTED == 'true' && contains(env.REGCTL_GROUPS, matrix.group)
+        run: |
+          curl -fsSL "https://github.com/regclient/regclient/releases/download/${REGCTL_VERSION}/regctl-linux-amd64" -o /usr/local/bin/regctl
+          chmod +x /usr/local/bin/regctl
+          printf '%s' "$ALIYUN_CR_PASSWORD" | regctl registry login registry.cn-shanghai.aliyuncs.com -u "$ALIYUN_CR_USERNAME" --pass-stdin
+        env:
+          ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
+          ALIYUN_CR_PASSWORD: ${{ secrets.ALIYUN_CR_PASSWORD }}
+
+      - name: Sync ${{ matrix.group }} images (regctl)
+        if: env.SELECTED == 'true' && contains(env.REGCTL_GROUPS, matrix.group)
+        run: ./scripts/sync-image.sh ./config/${{ matrix.group }}-images.yaml
+
       - name: Sync ${{ matrix.group }} images
-        if: github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group
+        if: env.SELECTED == 'true' && !contains(env.REGCTL_GROUPS, matrix.group)
         uses: hhyasdf/image-sync-action@v1.1
         env:
           ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
