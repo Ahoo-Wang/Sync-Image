@@ -30,6 +30,9 @@ jobs:
   sync:
     name: Sync ${{ matrix.group }} images
     runs-on: ubuntu-latest
+    concurrency:
+      group: sync-images-${{ matrix.group }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
