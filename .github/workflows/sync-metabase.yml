@@ -1,6 +1,8 @@
 name: Sync Metabase Image
 on:
   workflow_dispatch:
+env:
+  REGCTL_VERSION: v0.11.5
 jobs:
   SyncMetabaseImage:
     name: Sync Metabase Image
@@ -9,12 +11,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
+      - name: Setup regctl
+        run: |
+          curl -fsSL "https://github.com/regclient/regclient/releases/download/${REGCTL_VERSION}/regctl-linux-amd64" -o /usr/local/bin/regctl
+          chmod +x /usr/local/bin/regctl
+          regctl version
+
       - name: Sync Metabase Image
-        uses: hhyasdf/image-sync-action@v1.1
         env:
           ALIYUN_CR_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
           ALIYUN_CR_PASSWORD: ${{ secrets.ALIYUN_CR_PASSWORD }}
-        with:
-          auth_file: ./config/auth.yaml
-          images_file: ./config/metabase-images.yaml
-          version: latest
+        run: |
+          printf '%s' "$ALIYUN_CR_PASSWORD" | regctl registry login registry.cn-shanghai.aliyuncs.com -u "$ALIYUN_CR_USERNAME" --pass-stdin
+          ./scripts/sync-image.sh ./config/metabase-images.yaml
