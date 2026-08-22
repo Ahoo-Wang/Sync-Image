@@ -6,7 +6,7 @@ curlimages/curl:8.21.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
 # signoz
 groundnuty/k8s-wait-for:v2.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:k8s-wait-for_v2.0"
 signoz/signoz-schema-migrator:v0.144.9: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:signoz-schema-migrator_v0.144.9"
-signoz/frontend:0.75.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:frontend_0.75.0"
+signoz/frontend:1.1.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:frontend_1.1.0"
 signoz/signoz-otel-collector:v0.144.8: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:signoz-otel-collector_v0.144.8"
 signoz/alertmanager:0.23.9: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:alertmanager_0.23.9"
 signoz/query-service:0.76.2: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:query-service_0.76.2"
