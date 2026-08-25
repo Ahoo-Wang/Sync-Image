@@ -1,6 +1,6 @@
 # otel
-otel/autoinstrumentation-java:2.31.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.31.0"
-otel/autoinstrumentation-java:2.31.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.31.0"
+otel/autoinstrumentation-java:2.31.1: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.31.1"
+otel/autoinstrumentation-java:2.31.1: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:autoinstrumentation-java_2.31.1"
 ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.159.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:opentelemetry-collector_0.159.0"
 ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.159.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:opentelemetry-collector_0.159.0"
 ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.158.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:opentelemetry-operator_v0.158.0"
