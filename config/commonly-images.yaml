@@ -2,7 +2,7 @@
 busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 # curl
-curlimages/curl:8.21.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
+curlimages/curl:8.22.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
 # signoz
 groundnuty/k8s-wait-for:v2.0: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:k8s-wait-for_v2.0"
 signoz/signoz-schema-migrator:v0.144.9: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:signoz-schema-migrator_v0.144.9"
