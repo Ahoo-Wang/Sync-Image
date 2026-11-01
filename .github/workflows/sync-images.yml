@@ -21,6 +21,7 @@ on:
           - lobe-chat
           - new-api
           - otel
+          - mirrord
   push:
     branches: [main]
     paths:
@@ -37,14 +38,14 @@ jobs:
     # manifests that Aliyun ACR rejects); the rest via image-syncer.
     env:
       SELECTED: ${{ github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group }}
-      REGCTL_GROUPS: cnpg
+      REGCTL_GROUPS: cnpg mirrord
     concurrency:
       group: sync-images-${{ matrix.group }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
-        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel]
+        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel, mirrord]
     steps:
       - name: Checkout
         if: env.SELECTED == 'true'
