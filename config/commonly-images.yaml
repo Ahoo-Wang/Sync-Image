@@ -1,6 +1,5 @@
 # busybox
 busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
-busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 # curl
 curlimages/curl:8.23.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
 # signoz
