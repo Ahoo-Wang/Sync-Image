@@ -39,7 +39,7 @@ jobs:
     # manifests that Aliyun ACR rejects); the rest via image-syncer.
     env:
       SELECTED: ${{ github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group }}
-      REGCTL_GROUPS: cnpg mirrord
+      REGCTL_GROUPS: cnpg mirrord altinity otel commonly
     concurrency:
       group: sync-images-${{ matrix.group }}
       cancel-in-progress: true
