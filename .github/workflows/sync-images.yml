@@ -20,6 +20,7 @@ on:
           - kibana
           - lobe-chat
           - new-api
+          - nodejs
           - otel
           - mirrord
   push:
@@ -45,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, otel, mirrord]
+        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, kafka-ui, kibana, lobe-chat, new-api, nodejs, otel, mirrord]
     steps:
       - name: Checkout
         if: env.SELECTED == 'true'
