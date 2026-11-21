@@ -9,4 +9,4 @@ docker:27-dind: "registry.cn-shanghai.aliyuncs.com/ahoo/docker"
 # Gitea Actions job 容器
 catthehacker/ubuntu:act-22.04: "registry.cn-shanghai.aliyuncs.com/ahoo/catthehacker"
 maven:3.9-eclipse-temurin-21: "registry.cn-shanghai.aliyuncs.com/ahoo/maven"
-alpine/k8s:1.34.13: "registry.cn-shanghai.aliyuncs.com/ahoo/alpine-k8s"
+alpine/k8s:1.37.2: "registry.cn-shanghai.aliyuncs.com/ahoo/alpine-k8s"
