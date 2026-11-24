@@ -19,6 +19,7 @@ on:
           - gitea
           - kafka-ui
           - kibana
+          - linyi-base
           - lobe-chat
           - new-api
           - nodejs
@@ -40,14 +41,14 @@ jobs:
     # manifests that Aliyun ACR rejects); the rest via image-syncer.
     env:
       SELECTED: ${{ github.event_name == 'push' || inputs.group == 'all' || inputs.group == matrix.group }}
-      REGCTL_GROUPS: cnpg mirrord altinity otel commonly gitea
+      REGCTL_GROUPS: cnpg mirrord altinity otel commonly gitea linyi-base
     concurrency:
       group: sync-images-${{ matrix.group }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
-        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, gitea, kafka-ui, kibana, lobe-chat, new-api, nodejs, otel, mirrord]
+        group: [ahoo, altinity, clickhouse, cnpg, commonly, elasticsearch, flink, gitea, kafka-ui, kibana, linyi-base, lobe-chat, new-api, nodejs, otel, mirrord]
     steps:
       - name: Checkout
         if: env.SELECTED == 'true'
