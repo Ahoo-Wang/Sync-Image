@@ -88,12 +88,15 @@ jobs:
 
 ### 5.2 `lint-config.yml`（新增）
 
-在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**`、`scripts/**` 和该 workflow 自身。两个步骤：
+在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**`、`scripts/**` 和该 workflow 自身。五个步骤，任何一步失败都算检查失败：
 
-1. 跑 `scripts/list-groups.test.sh` 和 `scripts/lint-config.test.sh`；
-2. 跑 `scripts/lint-config.sh`。
+1. 在真实的 `config/` 上运行 `scripts/list-groups.sh`，校验分组文件名。分组名就是文件名，一个不合规的文件会让同步 workflow 的 `plan` job 失败、所有分组都不同步，所以要在 PR 阶段拦住；
+2. 跑 `scripts/list-groups.test.sh`；
+3. 跑 `scripts/lint-config.test.sh`；
+4. 跑 `shellcheck scripts/*.sh`；
+5. 跑 `scripts/lint-config.sh`。
 
-这个检查只报告，不阻塞同步（与 `sync-images.yml` 是两个独立的 workflow）。
+这个检查只报告，不阻塞同步（与 `sync-images.yml` 是两个独立的 workflow）。两个 workflow 都声明了 `permissions: contents: read`。
 
 ## 6. 新增脚本
 
@@ -101,8 +104,8 @@ jobs:
 
 用法：`scripts/list-groups.sh [group]`，配置目录取自 `CONFIG_DIR`，默认是仓库里的 `config/`。
 
-- 扫描 `config/*-images.yaml`（不递归），分组名即去掉 `-images.yaml` 的文件名。
-- 参数为 `all` 或空：输出全部分组。参数等于某个分组名：只输出该分组。
+- 扫描 `config/*-images.yaml`（不递归），分组名即去掉 `-images.yaml` 的文件名。只有普通文件算分组文件，同名目录会被忽略。
+- 参数为 `all` 或空：输出全部分组。参数与某个分组名完全相等（整串比较，不做模式匹配）时：只输出该分组。输出里只会出现校验过的分组名。
 - 参数不匹配任何分组，或目录里没有 `*-images.yaml`，或分组名不合法：退出码 1，并在 stderr 打印可用分组列表。
 - 输出到 stdout，按字母序：`{"include":[{"group":"altinity"},{"group":"bitnami"}]}`。
 - 纯 bash 实现，不依赖 jq。
@@ -113,6 +116,7 @@ jobs:
 
 - **重复行的定义**：同一个文件里，去掉首尾空白后完全相同的两条非注释、非空行。
 - 发现重复：对每一处打印 `<文件>:<行号>: duplicate of line <首次出现的行号>`，退出码 1。没有重复则退出码 0。
+- 没有可检查的文件，或某个文件不存在、不是普通文件、无法读取：退出码 2，原因写在 stderr。只有退出码 1 表示发现了重复。
 - 两个脚本都先写测试再实现，测试为自包含的 bash 脚本，用临时目录构造输入。
 
 ## 7. 逐文件变更
@@ -223,9 +227,13 @@ busybox:latest: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:busybox_lates
 
 ## 10. 合并后对开放 PR 的影响
 
+合并前用 `git merge-tree` 对当时开放的 Renovate PR 逐一核对过（2026-11-26）：
+
 - #153（`linyi-base` 的 `node:16.8.0`）和 #77（clickhouse 升到 26.11.2）：分组冻结后，Renovate 下次运行会自动关闭。
-- #130（metabase）：与去重后的文件冲突，由 Renovate 自动重建为只改 1 行。
-- 其余 Renovate PR 不受影响。合并后核对这些 PR 的状态。
+- 与本分支冲突的有 6 个，需要由 Renovate 在下次运行时重建：#155（`otel-images.yaml`）、#145（`cnpg-images.yaml`）、#130（`metabase-images.yaml`）、#129（`linyi-base-images.yaml` 和 `nodejs-images.yaml`），以及上面的 #153 和 #77。
+- 不受影响、可以正常合并的只有 #143、#144、#115。
+
+**不要手工解决这些冲突。** 尤其是 #129：它把 `linyi-base` 的三行 `node` 都改成 `26.13.1`。如果有人按 PR 一侧解决冲突，恢复出来的 `linyi-base` 会被覆盖，`packageRules` 的冻结拦不住人工合并。合并后先手动触发一次 Renovate（`renovate.yml` 支持手动触发），等它重建完这些 PR 再处理。
 
 ## 11. 已知限制
 

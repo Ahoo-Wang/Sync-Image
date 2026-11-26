@@ -713,7 +713,7 @@ metabase/metabase:v0.65.3.7: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 文件完整内容（config/cnpg-images.yaml）：
 
 ```yaml
-ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg"
+ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg"
 ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_18.7-system-trixie"
 ```
 
@@ -885,6 +885,9 @@ on:
     paths:
       - "config/*-images.yaml"
 
+permissions:
+  contents: read
+
 env:
   REGCTL_VERSION: v0.11.5
 
@@ -1011,6 +1014,9 @@ on:
       - "scripts/**"
       - ".github/workflows/lint-config.yml"
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint config
@@ -1019,10 +1025,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Unit tests
-        run: |
-          scripts/list-groups.test.sh
-          scripts/lint-config.test.sh
+      # A group is a file name. One mis-named file makes the sync workflow's
+      # plan job fail, which stops every sync job, so catch it here.
+      - name: Check group file names
+        run: scripts/list-groups.sh > /dev/null
+
+      - name: Test list-groups.sh
+        run: scripts/list-groups.test.sh
+
+      - name: Test lint-config.sh
+        run: scripts/lint-config.test.sh
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
 
       - name: Lint image configs
         run: scripts/lint-config.sh
@@ -1048,8 +1063,8 @@ Expected:
 
 ```
 actionlint exit=0
+15 passed, 0 failed
 11 passed, 0 failed
-7 passed, 0 failed
 lint exit=0
 100755 scripts/lint-config.sh
 100755 scripts/lint-config.test.sh
@@ -1181,7 +1196,10 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
 - [`.github/workflows/sync-images.yml`](./.github/workflows/sync-images.yml)
   derives its matrix from the files in `config/`. To add a group, add
   `config/<group>-images.yaml` and push to `main`. The workflow can also be
-  triggered by hand with a group name or `all`.
+  triggered by hand with a group name or `all`. The group name is the file
+  name without `-images.yaml` and must match `^[a-z0-9]+(-[a-z0-9]+)*$`: the
+  workflow lists groups from the directory, so one mis-named file stops every
+  sync.
 - Every group is synced by [`scripts/sync-image.sh`](./scripts/sync-image.sh)
   (regctl). It copies `linux/amd64` and `linux/arm64` only, and reassembles
   the index without OCI 1.1 attestation manifests, which Aliyun ACR rejects
@@ -1192,9 +1210,10 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
   (`clickhouse`, `flink`, `kafka-ui`, `linyi-base`) are switched off in
   `packageRules`: change their tags by hand.
 - [`.github/workflows/lint-config.yml`](./.github/workflows/lint-config.yml)
-  runs the script tests and reports duplicate mapping lines. Renovate bumps
-  every line of the same image to the same version, so lines that used to be
-  different versions can become identical; delete the extra lines.
+  checks group file names, runs the script tests and shellcheck, and reports
+  duplicate mapping lines. Renovate bumps every line of the same image to the
+  same version, so lines that used to be different versions can become
+  identical; delete the extra lines.
 
 Required repository secrets: `ALIYUN_CR_USERNAME`, `ALIYUN_CR_PASSWORD`.
 ```
@@ -1260,25 +1279,25 @@ SCRIPT
 Expected:
 
 ```
+15 passed, 0 failed
 11 passed, 0 failed
-7 passed, 0 failed
 lint exit=0
 shellcheck exit=0
 actionlint exit=0
 ```
 
-- [x] **Step 2: 映射比对（相对基线 `78ae146`）**
+- [x] **Step 2: 映射比对（相对基线 `d134031`）**
 
-基线是本分支的起点，也就是 `origin/main` 整理前的状态。比对以去重后的整行为单位，差异必须恰好是下面两组：移除 14 行、新增 9 行，其余 48 行逐字相同。多一行少一行都算失败。
+基线是本分支的起点，也就是 `origin/main` 整理前的状态。比对以去重后的整行为单位，差异必须恰好是下面两组：移除 14 行、新增 9 行、其余 48 行逐字相同。多一行少一行都算失败。
 
-分支在 push 前变基到了 `origin/main` @ `d134031`（比 `78ae146` 多 3 个 Renovate 的版本升级提交）。以变基目标为基线重跑这一步，结果相同。
+分支最初从 `78ae146` 分出，Task 9 完成后变基到了 `origin/main` @ `d134031`（只多 3 个 Renovate 的版本升级提交）。下面的命令以 `d134031` 为基线；变基前以 `78ae146` 为基线跑出的结果相同。
 
 Run:
 
 ```bash
 bash <<'SCRIPT'
 norm() { sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | grep -v '^#' | grep . | LC_ALL=C sort -u; }
-before=$(for f in $(git ls-tree --name-only 78ae146 config/ | grep -- '-images.yaml$'); do git show "78ae146:${f}"; echo; done | norm)
+before=$(for f in $(git ls-tree --name-only d134031 config/ | grep -- '-images.yaml$'); do git show "d134031:${f}"; echo; done | norm)
 after=$(for f in config/*-images.yaml; do cat "$f"; echo; done | norm)
 echo "before unique: $(printf '%s\n' "$before" | grep -c .)   after unique: $(printf '%s\n' "$after" | grep -c .)   unchanged: $(comm -12 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | grep -c .)"
 echo "--- removed:"
@@ -1328,7 +1347,7 @@ Run:
 ```bash
 bash <<'SCRIPT'
 git status --porcelain
-git log --oneline 78ae146..HEAD
+git log --oneline d134031..HEAD
 LC_ALL=C ls config
 SCRIPT
 ```
@@ -1371,10 +1390,33 @@ git commit -m "docs(plan): 勾选配置目录重整的已完成步骤" || echo "
 
 ---
 
+## 审查后的修复（2026-11-26）
+
+PR #156 开出后做了一次独立审查，没有 Critical 问题。下面是按审查意见补上的提交，都按「先写失败的测试、确认 RED、再修」的顺序完成；更正后的契约以 spec 的 5.2、6.1、6.2、10 为准。
+
+| 提交 | 修了什么 | 为什么重要 |
+|---|---|---|
+| `051dea2` | `scripts/list-groups.sh` 的参数从 `grep -qx`（正则）改为整串比较；只有普通文件才算分组文件 | 原实现下 `alt.nity` 这样的笔误会被接受，输出一个不存在的分组；多行参数还能把任意字符串送进 `matrix.group` |
+| `03336df` | `scripts/lint-config.sh` 对目录、无法读取的文件返回退出码 2；默认目录为空时给出明确提示 | 原实现把读取失败也报成退出码 1，看起来像「发现了重复」 |
+| `b56cbbc` | `lint-config.yml` 增加在真实 `config/` 上运行 `list-groups.sh` 的步骤和 `shellcheck` 步骤；两个 workflow 声明 `permissions: contents: read` | 单元测试用的是临时目录，原来一个命名不合规的分组文件能通过 PR 检查，合并后却让所有分组都停止同步 |
+| 本提交 | spec、计划、README 更正 | 见下 |
+
+文档更正：
+
+- spec 5.2：lint workflow 由两步变为五步。
+- spec 6.1、6.2：写明参数必须与分组名完全相等，以及退出码 2 的完整含义。
+- spec 10、下面的「合并之后」：用 `git merge-tree` 对开放 PR 重新核对，与分支冲突的是 6 个而不是 1 个。
+- README：补上分组名的命名规则。
+- 本计划：`config/cnpg-images.yaml` 的内容块改为变基后的 `1.30.2`；Task 10 的基线改为 `d134031`。
+
+没有采纳的建议：在 CI 里加 macOS job（bash 3.2 兼容目前靠本地验证）；让 `lint-config.sh` 输出 GitHub 的 `::error` 注解格式。
+
+---
+
 ## 合并之后（不在本计划内执行）
 
 - **首轮同步**：合并会触发 `sync-images.yml`。除 `metabase:v0.65.3.7` 需要真正同步（它在 ACR 里还不存在）之外，其余每个 tag 都应输出 `skip: ... (destination image exists)`。
-- **开放的 Renovate PR**：Renovate 下次运行后，#153 和 #77 应被自动关闭，#130 应被重建为只改 1 行。合并后核对这些 PR 的状态。
+- **开放的 Renovate PR**：Renovate 下次运行后，#153 和 #77 应被自动关闭。与本分支冲突的有 6 个（#155、#153、#145、#130、#129、#77），要等 Renovate 重建；不要手工解决冲突，尤其是 #129，按 PR 一侧解决会覆盖恢复出来的 `linyi-base`。合并后先手动触发一次 Renovate，再核对这些 PR 的状态。
 - **ACR 里多出来的 tag**：`ahoo/linyi-base:nginx_1.31.10`、`ahoo/linyi-base:node_14.21.3`（11-25 的同步产生的）和 `ahoo/flink` 的 461 个历史 tag 不在本次范围内，需要时手动清理。
 - **flink 的 `1.20.5` 是占位**：实际在用别的版本时，改 `config/flink-images.yaml` 里那一行即可。
 - **`linyi-base` 的去留**：确认 `linyi/cicd-assets` 已把 7 个 tag 搬进 `linyeah` 之后，可以删除 `config/linyi-base-images.yaml`，并从 `renovate.json` 的 `packageRules` 里去掉它。

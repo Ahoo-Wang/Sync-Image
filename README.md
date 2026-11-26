@@ -15,7 +15,10 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
 - [`.github/workflows/sync-images.yml`](./.github/workflows/sync-images.yml)
   derives its matrix from the files in `config/`. To add a group, add
   `config/<group>-images.yaml` and push to `main`. The workflow can also be
-  triggered by hand with a group name or `all`.
+  triggered by hand with a group name or `all`. The group name is the file
+  name without `-images.yaml` and must match `^[a-z0-9]+(-[a-z0-9]+)*$`: the
+  workflow lists groups from the directory, so one mis-named file stops every
+  sync.
 - Every group is synced by [`scripts/sync-image.sh`](./scripts/sync-image.sh)
   (regctl). It copies `linux/amd64` and `linux/arm64` only, and reassembles
   the index without OCI 1.1 attestation manifests, which Aliyun ACR rejects
@@ -26,8 +29,9 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
   (`clickhouse`, `flink`, `kafka-ui`, `linyi-base`) are switched off in
   `packageRules`: change their tags by hand.
 - [`.github/workflows/lint-config.yml`](./.github/workflows/lint-config.yml)
-  runs the script tests and reports duplicate mapping lines. Renovate bumps
-  every line of the same image to the same version, so lines that used to be
-  different versions can become identical; delete the extra lines.
+  checks group file names, runs the script tests and shellcheck, and reports
+  duplicate mapping lines. Renovate bumps every line of the same image to the
+  same version, so lines that used to be different versions can become
+  identical; delete the extra lines.
 
 Required repository secrets: `ALIYUN_CR_USERNAME`, `ALIYUN_CR_PASSWORD`.
