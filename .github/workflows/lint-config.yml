@@ -1,0 +1,29 @@
+name: Lint Config
+on:
+  pull_request:
+    paths:
+      - "config/**"
+      - "scripts/**"
+      - ".github/workflows/lint-config.yml"
+  push:
+    branches: [main]
+    paths:
+      - "config/**"
+      - "scripts/**"
+      - ".github/workflows/lint-config.yml"
+
+jobs:
+  lint:
+    name: Lint config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Unit tests
+        run: |
+          scripts/list-groups.test.sh
+          scripts/lint-config.test.sh
+
+      - name: Lint image configs
+        run: scripts/lint-config.sh
