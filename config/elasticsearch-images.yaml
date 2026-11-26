@@ -1,4 +1,1 @@
 docker.elastic.co/elasticsearch/elasticsearch:9.5.7: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch:9.5.7"
-docker.elastic.co/elasticsearch/elasticsearch:9.5.7: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch:9.5.7"
-docker.elastic.co/elasticsearch/elasticsearch:9.5.7: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch:9.5.7"
-#docker.elastic.co/elasticsearch/elasticsearch:/^8.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch"
