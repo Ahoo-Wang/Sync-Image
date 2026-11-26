@@ -57,7 +57,7 @@
 **Interfaces:**
 - Produces: `scripts/list-groups.sh [group]`。stdout 一行 `{"include":[{"group":"altinity"},{"group":"bitnami"}]}`，按字母序。环境变量 `CONFIG_DIR` 覆盖扫描目录，默认是脚本所在仓库的 `config/`。参数为 `all` 或空时输出全部分组，否则只输出指定的那一个。退出码 0 成功，1 失败（原因写在 stderr，stdout 为空）。Task 6 的 workflow 和 Task 7 的 lint workflow 依赖这个契约。
 
-- [ ] **Step 1: 写失败的测试**
+- [x] **Step 1: 写失败的测试**
 
 创建 `scripts/list-groups.test.sh`，内容如下：
 
@@ -160,12 +160,12 @@ echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
 ```
 
-- [ ] **Step 2: 运行测试，确认因为缺少脚本而失败**
+- [x] **Step 2: 运行测试，确认因为缺少脚本而失败**
 
 Run: `bash scripts/list-groups.test.sh; echo "exit=$?"`
 Expected: 11 行 `FAIL …`，每个失败块里 `actual   exit 127`，stderr 含 `No such file or directory`；最后一行 `0 passed, 11 failed`，`exit=1`。
 
-- [ ] **Step 3: 写实现**
+- [x] **Step 3: 写实现**
 
 创建 `scripts/list-groups.sh`，内容如下：
 
@@ -221,17 +221,17 @@ done <<< "$sorted"
 echo "{\"include\":[${json%,}]}"
 ```
 
-- [ ] **Step 4: 加执行权限并运行测试，确认通过**
+- [x] **Step 4: 加执行权限并运行测试，确认通过**
 
 Run: `chmod +x scripts/list-groups.sh scripts/list-groups.test.sh && scripts/list-groups.test.sh; echo "exit=$?"`
 Expected: 11 行 `ok …`，最后一行 `11 passed, 0 failed`，`exit=0`。
 
-- [ ] **Step 5: shellcheck**
+- [x] **Step 5: shellcheck**
 
 Run: `shellcheck scripts/list-groups.sh scripts/list-groups.test.sh; echo "exit=$?"`
 Expected: 没有输出，`exit=0`。
 
-- [ ] **Step 6: 在真实配置上确认**
+- [x] **Step 6: 在真实配置上确认**
 
 Run: `scripts/list-groups.sh`
 Expected（当前仓库还是整理前的 17 组）:
@@ -246,7 +246,7 @@ Expected: `{"include":[{"group":"commonly"}]}`，`exit=0`
 Run: `scripts/list-groups.sh nope; echo "exit=$?"`
 Expected: stderr 为 `error: unknown group 'nope'; available groups: ahoo altinity clickhouse cnpg commonly elasticsearch flink gitea kafka-ui kibana linyi-base lobe-chat metabase mirrord new-api nodejs otel `，`exit=1`
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add scripts/list-groups.sh scripts/list-groups.test.sh
@@ -265,7 +265,7 @@ git commit -m "feat(scripts): 新增 list-groups.sh——从 config/ 目录生�
 - Consumes: 无。
 - Produces: `scripts/lint-config.sh [file ...]`，不传参数时检查仓库的 `config/*-images.yaml`。每发现一处重复，向 stdout 打印一行 `<文件>:<行号>: duplicate of line <首次出现的行号>`。退出码 0 无重复，1 有重复，2 文件不存在。重复的定义：同一个文件里去掉首尾空白后完全相同的两条非注释、非空行。Task 5 用它验证去重，Task 7 的 lint workflow 调用它。
 
-- [ ] **Step 1: 写失败的测试**
+- [x] **Step 1: 写失败的测试**
 
 创建 `scripts/lint-config.test.sh`，内容如下：
 
@@ -354,12 +354,12 @@ echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
 ```
 
-- [ ] **Step 2: 运行测试，确认因为缺少脚本而失败**
+- [x] **Step 2: 运行测试，确认因为缺少脚本而失败**
 
 Run: `bash scripts/lint-config.test.sh; echo "exit=$?"`
 Expected: 7 行 `FAIL …`，每个失败块里 `actual   exit 127`；最后一行 `0 passed, 7 failed`，`exit=1`。
 
-- [ ] **Step 3: 写实现**
+- [x] **Step 3: 写实现**
 
 创建 `scripts/lint-config.sh`，内容如下：
 
@@ -412,17 +412,17 @@ done
 exit $status
 ```
 
-- [ ] **Step 4: 加执行权限并运行测试，确认通过**
+- [x] **Step 4: 加执行权限并运行测试，确认通过**
 
 Run: `chmod +x scripts/lint-config.sh scripts/lint-config.test.sh && scripts/lint-config.test.sh; echo "exit=$?"`
 Expected: 7 行 `ok …`，最后一行 `7 passed, 0 failed`，`exit=0`。
 
-- [ ] **Step 5: shellcheck**
+- [x] **Step 5: shellcheck**
 
 Run: `shellcheck scripts/lint-config.sh scripts/lint-config.test.sh; echo "exit=$?"`
 Expected: 没有输出，`exit=0`。
 
-- [ ] **Step 6: 在真实配置上确认（这是 Task 5 修复前的 RED）**
+- [x] **Step 6: 在真实配置上确认（这是 Task 5 修复前的 RED）**
 
 Run:
 
@@ -436,24 +436,24 @@ head -4 /tmp/lint-before.txt
 SCRIPT
 ```
 
-Expected: `exit=1`，`reported: 51`，各文件 3/2/1/2/1/42，前四行如下：
+Expected: `exit=1`，`reported: 51`，各文件 3/2/1/2/1/42。脚本按自身位置定位仓库，与当前目录无关，所以打印的是绝对路径；下面用 `<repo>` 代表仓库根目录：
 
 ```
-   3 config/cnpg-images.yaml
-   2 config/elasticsearch-images.yaml
-   1 config/gitea-images.yaml
-   2 config/kibana-images.yaml
-   1 config/linyi-base-images.yaml
-  42 config/metabase-images.yaml
-config/cnpg-images.yaml:3: duplicate of line 2
-config/cnpg-images.yaml:4: duplicate of line 2
-config/cnpg-images.yaml:5: duplicate of line 2
-config/elasticsearch-images.yaml:2: duplicate of line 1
+   3 <repo>/config/cnpg-images.yaml
+   2 <repo>/config/elasticsearch-images.yaml
+   1 <repo>/config/gitea-images.yaml
+   2 <repo>/config/kibana-images.yaml
+   1 <repo>/config/linyi-base-images.yaml
+  42 <repo>/config/metabase-images.yaml
+<repo>/config/cnpg-images.yaml:3: duplicate of line 2
+<repo>/config/cnpg-images.yaml:4: duplicate of line 2
+<repo>/config/cnpg-images.yaml:5: duplicate of line 2
+<repo>/config/elasticsearch-images.yaml:2: duplicate of line 1
 ```
 
 `uniq -c` 各行的先后随 `sort` 的 locale 变化，数字本身必须一致。
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add scripts/lint-config.sh scripts/lint-config.test.sh
@@ -473,7 +473,7 @@ git commit -m "feat(scripts): 新增 lint-config.sh——检查重复映射行"
 - Consumes: Task 2 的 `scripts/lint-config.sh`（用于验证）。
 - Produces: 三个文件里只有固定版本的映射行。`clickhouse-images.yaml` 同时收编原在 `commonly` 里的 `26.8.2-alpine` 那一行，Task 4 删除 `commonly` 时依赖这一点。
 
-- [ ] **Step 1: 重写 `config/clickhouse-images.yaml`**
+- [x] **Step 1: 重写 `config/clickhouse-images.yaml`**
 
 文件完整内容（config/clickhouse-images.yaml）：
 
@@ -488,7 +488,7 @@ clickhouse/clickhouse-server:24.12.6.70: "registry.cn-shanghai.aliyuncs.com/ahoo
 clickhouse/clickhouse-server:26.8.2-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
 ```
 
-- [ ] **Step 2: 重写 `config/flink-images.yaml`**
+- [x] **Step 2: 重写 `config/flink-images.yaml`**
 
 文件完整内容（config/flink-images.yaml）：
 
@@ -499,7 +499,7 @@ clickhouse/clickhouse-server:26.8.2-alpine: "registry.cn-shanghai.aliyuncs.com/a
 apache/flink:1.20.5: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
 ```
 
-- [ ] **Step 3: 重写 `config/kafka-ui-images.yaml`**
+- [x] **Step 3: 重写 `config/kafka-ui-images.yaml`**
 
 文件完整内容（config/kafka-ui-images.yaml）：
 
@@ -509,7 +509,7 @@ apache/flink:1.20.5: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
 provectuslabs/kafka-ui:v0.7.2: "registry.cn-shanghai.aliyuncs.com/ahoo/kafka-ui"
 ```
 
-- [ ] **Step 4: 验证**
+- [x] **Step 4: 验证**
 
 Run:
 
@@ -533,7 +533,7 @@ config/kafka-ui-images.yaml mapping-lines=1 regex-tag-lines=0
 lint exit=0
 ```
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add config/clickhouse-images.yaml config/flink-images.yaml config/kafka-ui-images.yaml
@@ -557,7 +557,7 @@ git commit -m "refactor(config): clickhouse/flink/kafka-ui 由正则 tag 改为�
 - Consumes: Task 3 已经把 `clickhouse/clickhouse-server:26.8.2-alpine` 那一行收进 `config/clickhouse-images.yaml`；Task 2 的 `scripts/lint-config.sh`。
 - Produces: `commonly` 的 18 行映射全部有了明确归属：bitnami 8、signoz 6、busybox 1、curl 1、nginx 1、clickhouse 1。映射行逐字不变。本任务之后 `config/` 下不再有 `commonly` 和 `ahoo`。
 
-- [ ] **Step 1: 创建 `config/bitnami-images.yaml`**
+- [x] **Step 1: 创建 `config/bitnami-images.yaml`**
 
 文件完整内容（config/bitnami-images.yaml）：
 
@@ -573,7 +573,7 @@ bitnamilegacy/mysql:9.4.0-debian-12-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/
 bitnamilegacy/wordpress:6.4.3-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/ahoo/bitnami:wordpress_6.4.3-debian-11-r0"
 ```
 
-- [ ] **Step 2: 创建 `config/busybox-images.yaml`**
+- [x] **Step 2: 创建 `config/busybox-images.yaml`**
 
 文件完整内容（config/busybox-images.yaml）：
 
@@ -582,7 +582,7 @@ bitnamilegacy/wordpress:6.4.3-debian-11-r0: "registry.cn-shanghai.aliyuncs.com/a
 busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 ```
 
-- [ ] **Step 3: 创建 `config/curl-images.yaml`**
+- [x] **Step 3: 创建 `config/curl-images.yaml`**
 
 文件完整内容（config/curl-images.yaml）：
 
@@ -591,7 +591,7 @@ busybox:1.38: "registry.cn-shanghai.aliyuncs.com/ahoo/busybox"
 curlimages/curl:8.23.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
 ```
 
-- [ ] **Step 4: 创建 `config/nginx-images.yaml`**
+- [x] **Step 4: 创建 `config/nginx-images.yaml`**
 
 文件完整内容（config/nginx-images.yaml）：
 
@@ -600,7 +600,7 @@ curlimages/curl:8.23.0: "registry.cn-shanghai.aliyuncs.com/ahoo/curl"
 nginx:1.31.10-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/nginx"
 ```
 
-- [ ] **Step 5: 创建 `config/signoz-images.yaml`**
+- [x] **Step 5: 创建 `config/signoz-images.yaml`**
 
 文件完整内容（config/signoz-images.yaml）：
 
@@ -616,13 +616,13 @@ signoz/query-service:0.76.2: "registry.cn-shanghai.aliyuncs.com/ahoo/signoz:quer
 
 `commonly` 里被注释掉的 `bitnamilegacy/kafka:2.7.0-debian-10-r64` 那一行不带走：按 spec，注释掉的旧映射一律删除，git 历史里查得到。
 
-- [ ] **Step 6: 删除两个旧文件**
+- [x] **Step 6: 删除两个旧文件**
 
 ```bash
 git rm config/commonly-images.yaml config/ahoo-images.yaml
 ```
 
-- [ ] **Step 7: 验证：`commonly` 的每一行都还在**
+- [x] **Step 7: 验证：`commonly` 的每一行都还在**
 
 Run:
 
@@ -642,7 +642,7 @@ SCRIPT
 
 Expected: 没有 `MISSING:` 行，`commonly lines not found elsewhere: 0`，`lint exit=0`。
 
-- [ ] **Step 8: 提交**
+- [x] **Step 8: 提交**
 
 ```bash
 git add config/bitnami-images.yaml config/busybox-images.yaml config/curl-images.yaml config/nginx-images.yaml config/signoz-images.yaml
@@ -666,7 +666,7 @@ git commit -m "refactor(config): 拆分 commonly 为明确分组，删除 ahoo �
 - Consumes: Task 2 的 `scripts/lint-config.sh`（不传参数时检查整个 `config/`）。
 - Produces: `config/` 的最终内容：20 个文件、57 行映射、没有重复行。`config/linyi-base-images.yaml` 恢复为提交 `25025d7` 首次加入时的 7 行映射。Task 6 的 workflow 和 Task 8 的 Renovate 冻结都建立在这个最终目录上。
 
-- [ ] **Step 1: 改动之前先确认 RED**
+- [x] **Step 1: 改动之前先确认 RED**
 
 本任务修的是两个已经发生的问题。动手之前先用命令把它们钉住，对应 `AGENTS.md` 的「先写失败的测试、亲眼确认 RED」。
 
@@ -697,7 +697,7 @@ lint exit=1 reported=51
 
 两个问题分别是：`linyi-base` 里三个存量版本被 Renovate 改掉了；整个 `config/` 有 51 行重复映射。输出和上面不一致就停下来，不要继续。
 
-- [ ] **Step 2: 重写 `config/metabase-images.yaml`**
+- [x] **Step 2: 重写 `config/metabase-images.yaml`**
 
 只留最新的稳定版。另外 4 个版本里，`v0.65.3`、`v0.65.0.14-beta`、`v0.65.0-beta` 在 ACR 中不存在，`v0.50.0-RC2` 是 RC。
 
@@ -708,7 +708,7 @@ lint exit=1 reported=51
 metabase/metabase:v0.65.3.7: "registry.cn-shanghai.aliyuncs.com/ahoo/metabase"
 ```
 
-- [ ] **Step 3: 重写 `config/cnpg-images.yaml`**
+- [x] **Step 3: 重写 `config/cnpg-images.yaml`**
 
 文件完整内容（config/cnpg-images.yaml）：
 
@@ -717,7 +717,7 @@ ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1: "registry.cn-shanghai.aliyuncs.com
 ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_18.7-system-trixie"
 ```
 
-- [ ] **Step 4: 重写 `config/elasticsearch-images.yaml`**
+- [x] **Step 4: 重写 `config/elasticsearch-images.yaml`**
 
 文件完整内容（config/elasticsearch-images.yaml）：
 
@@ -725,7 +725,7 @@ ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie: "registry.cn-shanghai.aliy
 docker.elastic.co/elasticsearch/elasticsearch:9.5.7: "registry.cn-shanghai.aliyuncs.com/ahoo/elasticsearch:9.5.7"
 ```
 
-- [ ] **Step 5: 重写 `config/kibana-images.yaml`**
+- [x] **Step 5: 重写 `config/kibana-images.yaml`**
 
 文件完整内容（config/kibana-images.yaml）：
 
@@ -733,7 +733,7 @@ docker.elastic.co/elasticsearch/elasticsearch:9.5.7: "registry.cn-shanghai.aliyu
 docker.elastic.co/kibana/kibana:9.5.7: "registry.cn-shanghai.aliyuncs.com/ahoo/kibana:9.5.7"
 ```
 
-- [ ] **Step 6: 重写 `config/gitea-images.yaml`**
+- [x] **Step 6: 重写 `config/gitea-images.yaml`**
 
 `gitea/act_runner` 原来有两行相同的 0.6.1，只留一行。0.2.11 那一行已被 PR #142 改成 0.6.1，`ahoo/act-runner:0.2.11` 这个 tag 本身还在 ACR 里，不受影响。
 
@@ -753,7 +753,7 @@ maven:3.9-eclipse-temurin-21: "registry.cn-shanghai.aliyuncs.com/ahoo/maven"
 alpine/k8s:1.37.2: "registry.cn-shanghai.aliyuncs.com/ahoo/alpine-k8s"
 ```
 
-- [ ] **Step 7: 重写 `config/linyi-base-images.yaml`**
+- [x] **Step 7: 重写 `config/linyi-base-images.yaml`**
 
 恢复为提交 `25025d7` 首次加入时的 7 行映射，文件头的盘点说明原样保留，并追加冻结说明。这 7 个 tag 都已确认在 ACR 中。
 
@@ -783,7 +783,7 @@ node:16.8.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:node_16.8.0"
 busybox:latest: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:busybox_latest"
 ```
 
-- [ ] **Step 8: 重写 `config/otel-images.yaml`**
+- [x] **Step 8: 重写 `config/otel-images.yaml`**
 
 三行映射不变，只删掉末尾注释掉的 `kube-rbac-proxy` 那一行。
 
@@ -796,7 +796,7 @@ ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:
 ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.163.0: "registry.cn-shanghai.aliyuncs.com/ahoo/otel:opentelemetry-operator_v0.163.0"
 ```
 
-- [ ] **Step 9: 验证（GREEN）**
+- [x] **Step 9: 验证（GREEN）**
 
 Run:
 
@@ -844,7 +844,7 @@ config/otel-images.yaml 3
 config/signoz-images.yaml 6
 ```
 
-- [ ] **Step 10: 提交**
+- [x] **Step 10: 提交**
 
 ```bash
 git add config/metabase-images.yaml config/cnpg-images.yaml config/elasticsearch-images.yaml config/kibana-images.yaml config/gitea-images.yaml config/linyi-base-images.yaml config/otel-images.yaml
@@ -866,7 +866,7 @@ git commit -m "fix(config): 去重 51 行重复映射，恢复被 Renovate 改�
 
 matrix 必须来自某个 job 的输出才能用在 `strategy.matrix` 里，所以多了一个很轻的 `plan` job，而不是把清单写在 workflow 里。
 
-- [ ] **Step 1: 重写 `.github/workflows/sync-images.yml`**
+- [x] **Step 1: 重写 `.github/workflows/sync-images.yml`**
 
 文件完整内容（.github/workflows/sync-images.yml）：
 
@@ -937,13 +937,13 @@ jobs:
         run: scripts/sync-image.sh "config/${{ matrix.group }}-images.yaml"
 ```
 
-- [ ] **Step 2: 删除不再需要的两个文件**
+- [x] **Step 2: 删除不再需要的两个文件**
 
 ```bash
 git rm .github/workflows/sync-metabase.yml config/auth.yaml
 ```
 
-- [ ] **Step 3: 验证**
+- [x] **Step 3: 验证**
 
 Run:
 
@@ -974,7 +974,7 @@ no stale references
 
 第三行是在本地模拟 `plan` job 写入 `$GITHUB_OUTPUT` 的那一行。最后一项只查 `.github`：`scripts/list-groups.test.sh` 把 `auth.yaml` 当作样例文件名，不算残留引用。README 里还会提到 `sync-metabase`，Task 9 会重写，所以这里不检查 README。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add .github/workflows/sync-images.yml
@@ -992,7 +992,7 @@ git commit -m "ci(sync): 目录即唯一事实源，所有分组经 regctl 同�
 - Consumes: `scripts/list-groups.test.sh` 和 `scripts/lint-config.test.sh`（成功时最后一行是 `N passed, 0 failed`，并用退出码表示结果）；`scripts/lint-config.sh`（不传参数时检查整个 `config/`，重复行时退出码 1）。
 - Produces: 一个与 `sync-images.yml` 相互独立的 workflow，只在 `config/`、`scripts/` 或它自己有改动时运行，报告结果但不阻塞同步。
 
-- [ ] **Step 1: 创建 `.github/workflows/lint-config.yml`**
+- [x] **Step 1: 创建 `.github/workflows/lint-config.yml`**
 
 文件完整内容（.github/workflows/lint-config.yml）：
 
@@ -1028,7 +1028,7 @@ jobs:
         run: scripts/lint-config.sh
 ```
 
-- [ ] **Step 2: 验证**
+- [x] **Step 2: 验证**
 
 在本地按 workflow 里的顺序跑同样的三步，并确认脚本的执行权限被 git 记录下来。
 
@@ -1058,7 +1058,7 @@ lint exit=0
 100755 scripts/sync-image.sh
 ```
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add .github/workflows/lint-config.yml
@@ -1078,7 +1078,7 @@ git commit -m "ci(lint): 新增 lint-config workflow"
 
 冻结在 Renovate 下一次运行时才生效：那时它会自动关闭 #153（`linyi-base` 的 `node:16.8.0`）和 #77（clickhouse 升到 26.11.2）。
 
-- [ ] **Step 1: 重写 `renovate.json`**
+- [x] **Step 1: 重写 `renovate.json`**
 
 只新增 `packageRules` 一项，其余逐字不变。
 
@@ -1123,7 +1123,7 @@ git commit -m "ci(lint): 新增 lint-config workflow"
 }
 ```
 
-- [ ] **Step 2: 用官方镜像校验**
+- [x] **Step 2: 用官方镜像校验**
 
 Run:
 
@@ -1141,7 +1141,7 @@ SCRIPT
 
 Expected: `validator exit=0`，下一行是 ` INFO: Config validated successfully against 1 file(s)`，最后打印出那条规则（一个只含一个元素的列表，`enabled` 为 `False`，`matchFileNames` 是上面四个路径）。
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add renovate.json
@@ -1159,7 +1159,7 @@ git commit -m "chore(renovate): 冻结 clickhouse/flink/kafka-ui/linyi-base"
 - Consumes: Task 6、Task 7、Task 8 产出的文件路径（README 里链接到它们）。
 - Produces: 无代码接口。README 描述的是 Task 1 到 Task 8 之后的真实状态。
 
-- [ ] **Step 1: 重写 `README.md`**
+- [x] **Step 1: 重写 `README.md`**
 
 文件完整内容（README.md）：
 
@@ -1199,7 +1199,7 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
 Required repository secrets: `ALIYUN_CR_USERNAME`, `ALIYUN_CR_PASSWORD`.
 ```
 
-- [ ] **Step 2: 验证**
+- [x] **Step 2: 验证**
 
 README 里链接到的路径都必须存在，并且不再提到已经删掉的东西。
 
@@ -1225,7 +1225,7 @@ ok      .github/workflows/lint-config.yml
 no stale references in README
 ```
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add README.md
@@ -1243,7 +1243,7 @@ git commit -m "docs: 更新 README 的分组规则与新增分组步骤"
 - Consumes: Task 1 到 Task 9 的全部产出。
 - Produces: 一份与 spec 第 9 节一一对应的核对结果。任何一项和期望不符，都回到对应的任务修正，不要在这里绕过。
 
-- [ ] **Step 1: 测试与静态检查**
+- [x] **Step 1: 测试与静态检查**
 
 Run:
 
@@ -1267,7 +1267,7 @@ shellcheck exit=0
 actionlint exit=0
 ```
 
-- [ ] **Step 2: 映射比对（相对基线 `78ae146`）**
+- [x] **Step 2: 映射比对（相对基线 `78ae146`）**
 
 基线是本分支的起点，也就是 `origin/main` 整理前的状态。比对以去重后的整行为单位，差异必须恰好是下面两组：移除 14 行、新增 9 行，其余 48 行逐字相同。多一行少一行都算失败。
 
@@ -1319,7 +1319,7 @@ provectuslabs/kafka-ui:v0.7.2: "registry.cn-shanghai.aliyuncs.com/ahoo/kafka-ui"
 
 移除的 14 行分别是：`ahoo` 2 行、clickhouse 正则 4 行、flink 和 kafka-ui 正则各 1 行、`linyi-base` 被 Renovate 改出来的 2 行、metabase 的 4 个旧版本。新增的 9 行是：clickhouse 的 4 个固定版本、flink 和 kafka-ui 各 1 个固定版本、`linyi-base` 恢复的 3 行。
 
-- [ ] **Step 3: 工作区、提交历史和最终目录**
+- [x] **Step 3: 工作区、提交历史和最终目录**
 
 Run:
 
@@ -1356,7 +1356,7 @@ otel-images.yaml
 signoz-images.yaml
 ```
 
-- [ ] **Step 4: 提交计划文件的勾选状态**
+- [x] **Step 4: 提交计划文件的勾选状态**
 
 执行过程中本计划里的 `- [ ]` 如果被改成了 `- [x]`，在这里提交：
 
