@@ -1,1 +1,4 @@
-apache/flink:/^1.+/: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
+# Apache Flink，固定版本。
+# Renovate 冻结（见 renovate.json 的 packageRules）：升级时手动改 tag。
+# 1.20.5 是原正则 /^1.+/ 范围内最新的版本；实际在用别的版本时改这一行。
+apache/flink:1.20.5: "registry.cn-shanghai.aliyuncs.com/ahoo/flink"
