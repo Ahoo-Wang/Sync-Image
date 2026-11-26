@@ -77,6 +77,63 @@ else
   fail=$((fail + 1))
 fi
 
+mkdir "$TMP/dir.yaml"
+out=$("$SCRIPT" "$TMP/clean.yaml" "$TMP/dir.yaml" 2>"$TMP/stderr")
+code=$?
+if [ "$code" = 2 ] && grep -qF "$TMP/dir.yaml: no such file" "$TMP/stderr"; then
+  echo 'ok   a directory is not a config file'
+  pass=$((pass + 1))
+else
+  echo 'FAIL a directory is not a config file'
+  echo "  expected exit 2, stderr containing: $TMP/dir.yaml: no such file"
+  echo "  actual   exit $code, stdout: $out, stderr: $(cat "$TMP/stderr")"
+  fail=$((fail + 1))
+fi
+
+write "$TMP/locked.yaml" "$A"
+chmod 000 "$TMP/locked.yaml"
+out=$("$SCRIPT" "$TMP/locked.yaml" 2>"$TMP/stderr")
+code=$?
+chmod 644 "$TMP/locked.yaml"
+if [ "$code" = 2 ] && grep -qF "$TMP/locked.yaml: cannot read" "$TMP/stderr"; then
+  echo 'ok   an unreadable file is a usage error, not a duplicate'
+  pass=$((pass + 1))
+else
+  echo 'FAIL an unreadable file is a usage error, not a duplicate'
+  echo "  expected exit 2, stderr containing: $TMP/locked.yaml: cannot read"
+  echo "  actual   exit $code, stdout: $out, stderr: $(cat "$TMP/stderr")"
+  fail=$((fail + 1))
+fi
+
+# Without arguments the script checks the config/ directory of the repo it lives in.
+mkdir -p "$TMP/repo/scripts" "$TMP/repo/config"
+cp "$SCRIPT" "$TMP/repo/scripts/lint-config.sh"
+write "$TMP/repo/config/one-images.yaml" "$A" "$A"
+"$TMP/repo/scripts/lint-config.sh" > "$TMP/out" 2>"$TMP/stderr"
+code=$?
+if [ "$code" = 1 ] && [ "$(cat "$TMP/out")" = "$TMP/repo/config/one-images.yaml:2: duplicate of line 1" ]; then
+  echo 'ok   the default config dir is the one next to the script'
+  pass=$((pass + 1))
+else
+  echo 'FAIL the default config dir is the one next to the script'
+  echo "  expected exit 1 and stdout: $TMP/repo/config/one-images.yaml:2: duplicate of line 1"
+  echo "  actual   exit $code, stdout: $(cat "$TMP/out"), stderr: $(cat "$TMP/stderr")"
+  fail=$((fail + 1))
+fi
+
+rm "$TMP/repo/config/one-images.yaml"
+"$TMP/repo/scripts/lint-config.sh" > "$TMP/out" 2>"$TMP/stderr"
+code=$?
+if [ "$code" = 2 ] && grep -qF 'no *-images.yaml files' "$TMP/stderr"; then
+  echo 'ok   an empty default config dir is reported clearly'
+  pass=$((pass + 1))
+else
+  echo 'FAIL an empty default config dir is reported clearly'
+  echo "  expected exit 2, stderr containing: no *-images.yaml files"
+  echo "  actual   exit $code, stdout: $(cat "$TMP/out"), stderr: $(cat "$TMP/stderr")"
+  fail=$((fail + 1))
+fi
+
 echo
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

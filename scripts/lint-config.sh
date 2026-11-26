@@ -10,16 +10,27 @@
 #
 # Usage: lint-config.sh [file ...]   (default: config/*-images.yaml)
 #
-# Exit codes: 0 no duplicates, 1 duplicates found, 2 a file does not exist
+# Exit codes: 0 no duplicates, 1 duplicates found, 2 no config files to check,
+#             or a file that is missing, is not a regular file or cannot be read
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
-[ $# -gt 0 ] || set -- "$ROOT"/config/*-images.yaml
+if [ $# -eq 0 ]; then
+  set -- "$ROOT"/config/*-images.yaml
+  if [ ! -f "$1" ]; then
+    echo "lint-config: no *-images.yaml files in $ROOT/config" >&2
+    exit 2
+  fi
+fi
 
 for file in "$@"; do
-  if [ ! -e "$file" ]; then
+  if [ ! -f "$file" ]; then
     echo "lint-config: $file: no such file" >&2
+    exit 2
+  fi
+  if [ ! -r "$file" ]; then
+    echo "lint-config: $file: cannot read" >&2
     exit 2
   fi
 done
@@ -40,7 +51,16 @@ for file in "$@"; do
       }
     }
     END { exit found }
-  ' "$file" || status=1
+  ' "$file"
+  # awk exits 1 only for duplicates; anything else is a read error.
+  case $? in
+    0) ;;
+    1) [ "$status" -eq 0 ] && status=1 ;;
+    *)
+      echo "lint-config: $file: read error" >&2
+      status=2
+      ;;
+  esac
 done
 
 exit $status
