@@ -1,8 +1,8 @@
 # Sync-Image 配置目录重整 设计
 
 - 日期：2026-11-26
-- 状态：待评审
-- 基线：`origin/main` @ `78ae146`
+- 状态：已实现（分支 `refactor/config-reorganization`）
+- 基线：`origin/main` @ `78ae146`（设计时的 `origin/main`。实现时分支变基到了 `d134031`，只多出 3 个 Renovate 的版本升级提交；以它为基线核对，结果相同）
 
 ## 1. 背景
 
@@ -215,7 +215,7 @@ busybox:latest: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:busybox_lates
 
 1. **单元测试**：两个新脚本先写测试、确认失败，再实现到通过。
 2. **静态检查**：`actionlint` 检查两个 workflow，`renovate-config-validator` 检查 `renovate.json`。
-3. **映射比对**：脚本比对基线（`78ae146`）与新目录的映射集合（以去重后的整行为单位），差异必须恰好是下面两组，不能有其他变化。
+3. **映射比对**：脚本比对基线（`78ae146`；分支变基后以变基目标为基线）与新目录的映射集合（以去重后的整行为单位），差异必须恰好是下面两组，不能有其他变化。
    - 移除 14 行：`ahoo` 2 行；clickhouse 正则 4 行；flink、kafka-ui 正则各 1 行；`linyi-base` 的 `nginx:1.31.10` 和 `node:14.21.3`；metabase 的 `v0.65.3`、`v0.50.0-RC2`、`v0.65.0.14-beta`、`v0.65.0-beta`。
    - 新增 9 行：clickhouse 4 行固定版本；flink `1.20.5`；kafka-ui `v0.7.2`；`linyi-base` 的 `nginx:1.23.3`、`node:14.16.0`、`node:14.17.3`。
    - 其余 48 行逐字相同。
