@@ -7,7 +7,7 @@
 #   {"include":[{"group":"altinity"},{"group":"bitnami"}]}
 #
 # Usage: list-groups.sh [group]
-#   group: "all" (default) or the name of a single group
+#   group: "all" (default) or the exact name of a single group
 #
 # CONFIG_DIR overrides the directory to scan (default: the repo's config/).
 set -euo pipefail
@@ -24,7 +24,7 @@ fail() {
 
 groups=()
 for file in "$CONFIG_DIR"/*-images.yaml; do
-  [ -e "$file" ] || continue
+  [ -f "$file" ] || continue
   name=$(basename "$file" -images.yaml)
   [[ $name =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || fail "invalid group name '$name' ($file): use lowercase letters, digits and hyphens"
   groups+=("$name")
@@ -35,10 +35,16 @@ done
 sorted=$(printf '%s\n' "${groups[@]}" | LC_ALL=C sort)
 
 if [ "$SELECTED" != all ]; then
-  if ! printf '%s\n' "$sorted" | grep -qx -- "$SELECTED"; then
-    fail "unknown group '$SELECTED'; available groups: $(printf '%s\n' "$sorted" | tr '\n' ' ')"
-  fi
-  sorted=$SELECTED
+  # Compare whole strings: a pattern such as "alt.nity" must not select a group.
+  match=
+  while IFS= read -r name; do
+    if [ "$name" = "$SELECTED" ]; then
+      match=$name
+      break
+    fi
+  done <<< "$sorted"
+  [ -n "$match" ] || fail "unknown group '$SELECTED'; available groups: $(printf '%s\n' "$sorted" | tr '\n' ' ')"
+  sorted=$match
 fi
 
 json=

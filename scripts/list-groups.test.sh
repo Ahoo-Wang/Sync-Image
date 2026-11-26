@@ -66,6 +66,8 @@ assert_output '"all" lists every group' "$ALL" 0 all
 assert_output 'a known group is listed alone' '{"include":[{"group":"bitnami"}]}' 0 bitnami
 assert_stderr 'an unknown group fails and lists the available ones' 'available groups: altinity bitnami signoz ' 1 nope
 assert_stderr 'a partial name is not a match' "unknown group 'bit'" 1 bit
+assert_stderr 'a regex that happens to match is not a group name' "unknown group 'alt.nity'" 1 'alt.nity'
+assert_stderr 'a multi-line argument is not a group name' "unknown group 'bit" 1 $'bit\nbitnami'
 
 make_config altinity-images.yaml auth.yaml notes.md
 assert_output 'files that are not *-images.yaml are ignored' '{"include":[{"group":"altinity"}]}' 0
@@ -74,6 +76,9 @@ make_config altinity-images.yaml
 mkdir -p "$TMP/config/nested"
 : > "$TMP/config/nested/deep-images.yaml"
 assert_output 'subdirectories are not scanned' '{"include":[{"group":"altinity"}]}' 0
+
+mkdir "$TMP/config/decoy-images.yaml"
+assert_output 'a directory named like a group file is ignored' '{"include":[{"group":"altinity"}]}' 0
 
 make_config 'Bad_Name-images.yaml'
 assert_stderr 'an invalid group name fails' "invalid group name 'Bad_Name'" 1
@@ -88,6 +93,23 @@ if [ "$code" = 1 ] && [ -z "$out" ] && grep -qF 'config directory not found' "$T
   pass=$((pass + 1))
 else
   echo 'FAIL a missing config dir fails'
+  fail=$((fail + 1))
+fi
+
+# Without CONFIG_DIR the script scans the config/ directory of the repo it lives in.
+mkdir -p "$TMP/repo/scripts" "$TMP/repo/config"
+cp "$SCRIPT" "$TMP/repo/scripts/list-groups.sh"
+: > "$TMP/repo/config/only-images.yaml"
+out=$(env -u CONFIG_DIR "$TMP/repo/scripts/list-groups.sh" 2>"$TMP/stderr")
+code=$?
+if [ "$code" = 0 ] && [ "$out" = '{"include":[{"group":"only"}]}' ]; then
+  echo 'ok   the default config dir is the one next to the script'
+  pass=$((pass + 1))
+else
+  echo 'FAIL the default config dir is the one next to the script'
+  echo "  expected exit 0 and stdout: {\"include\":[{\"group\":\"only\"}]}"
+  echo "  actual   exit $code and stdout: $out"
+  echo "  stderr: $(cat "$TMP/stderr")"
   fail=$((fail + 1))
 fi
 
