@@ -12,6 +12,9 @@ on:
     paths:
       - "config/*-images.yaml"
 
+permissions:
+  contents: read
+
 env:
   REGCTL_VERSION: v0.11.5
 

@@ -12,6 +12,9 @@ on:
       - "scripts/**"
       - ".github/workflows/lint-config.yml"
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint config
@@ -20,10 +23,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Unit tests
-        run: |
-          scripts/list-groups.test.sh
-          scripts/lint-config.test.sh
+      # A group is a file name. One mis-named file makes the sync workflow's
+      # plan job fail, which stops every sync job, so catch it here.
+      - name: Check group file names
+        run: scripts/list-groups.sh > /dev/null
+
+      - name: Test list-groups.sh
+        run: scripts/list-groups.test.sh
+
+      - name: Test lint-config.sh
+        run: scripts/lint-config.test.sh
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
 
       - name: Lint image configs
         run: scripts/lint-config.sh
