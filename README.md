@@ -5,19 +5,29 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
 
 ## Usage
 
-- Image groups live in [`config/`](./config), one `*-images.yaml` per group.
-  Each line maps a source image tag to a destination repository:
-  `"<src-image>:<tag>": "<dst-repo>[:<dst-tag>]"`. Tag regexes like
-  `/^24\..+/` are supported by the [image-syncer](https://github.com/AliyunContainerService/image-syncer)
-  based groups.
+- Image groups live in [`config/`](./config), one `*-images.yaml` per group. A
+  group maps to one ACR repository (`bitnami-images.yaml` → `ahoo/bitnami`).
+  The one exception is `gitea-images.yaml`, which is grouped by purpose
+  (Gitea CI) and covers several repositories.
+- Each line maps a pinned source image tag to a destination:
+  `"<src-image>:<tag>": "<dst-repo>[:<dst-tag>]"`. Tag regexes are not used:
+  they sync far too many tags.
 - [`.github/workflows/sync-images.yml`](./.github/workflows/sync-images.yml)
-  syncs these groups (manual run picks a group, or all). Pushing changes to
-  `config/*-images.yaml` on `main` triggers a sync automatically.
-  Metabase uses [`.github/workflows/sync-metabase.yml`](./.github/workflows/sync-metabase.yml)
-  and [`scripts/sync-image.sh`](./scripts/sync-image.sh) instead: it reassembles
-  multi-arch indexes without OCI 1.1 attestation manifests, which Aliyun ACR
-  rejects with `unknown manifest class for application/vnd.oci.empty.v1+json`.
-- [Renovate](./renovate.json) keeps image tags in the config files up to date
-  via `customManagers`; merging its PRs triggers the sync.
+  derives its matrix from the files in `config/`. To add a group, add
+  `config/<group>-images.yaml` and push to `main`. The workflow can also be
+  triggered by hand with a group name or `all`.
+- Every group is synced by [`scripts/sync-image.sh`](./scripts/sync-image.sh)
+  (regctl). It copies `linux/amd64` and `linux/arm64` only, and reassembles
+  the index without OCI 1.1 attestation manifests, which Aliyun ACR rejects
+  with `unknown manifest class for application/vnd.oci.empty.v1+json`. A tag
+  that already exists at the destination is skipped.
+- [Renovate](./renovate.json) keeps image tags up to date via
+  `customManagers`; merging its PRs triggers the sync. Frozen groups
+  (`clickhouse`, `flink`, `kafka-ui`, `linyi-base`) are switched off in
+  `packageRules`: change their tags by hand.
+- [`.github/workflows/lint-config.yml`](./.github/workflows/lint-config.yml)
+  runs the script tests and reports duplicate mapping lines. Renovate bumps
+  every line of the same image to the same version, so lines that used to be
+  different versions can become identical; delete the extra lines.
 
 Required repository secrets: `ALIYUN_CR_USERNAME`, `ALIYUN_CR_PASSWORD`.
