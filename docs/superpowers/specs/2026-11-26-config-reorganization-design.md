@@ -88,7 +88,7 @@ jobs:
 
 ### 5.2 `lint-config.yml`（新增）
 
-在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**` 和 `scripts/**`。两个步骤：
+在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**`、`scripts/**` 和该 workflow 自身。两个步骤：
 
 1. 跑 `scripts/list-groups.test.sh` 和 `scripts/lint-config.test.sh`；
 2. 跑 `scripts/lint-config.sh`。
