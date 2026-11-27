@@ -10,7 +10,11 @@
 #   node 14.16.0 / 14.17.3 / 16.8.0   3 个仓
 #   busybox latest          1 个仓
 #
-# 版本必须与存量 Dockerfile 一致，所以放在 frozen/ 里，只手动改。
+# 2026-11-27 追加：wow-project-template 的集成测试（Testcontainers）在 Gitea CI 里要用的两个镜像。
+#   mongo 7.0                    集成测试里写死的 MongoDBContainer("mongo:7.0")
+#   testcontainers/ryuk 0.14.0   testcontainers 2.0.5 默认的 ryuk 镜像（版本跟着 testcontainers 走）
+#
+# 版本必须与使用方写死的版本一致，所以放在 frozen/ 里，只手动改。
 adoptopenjdk/openjdk11:jdk11u-centos-nightly-slim adoptopenjdk-openjdk11
 nginx:1.23.3 nginx
 nginx:latest nginx
@@ -18,3 +22,5 @@ node:14.16.0 node
 node:14.17.3 node
 node:16.8.0 node
 busybox:latest busybox
+mongo:7.0 mongo
+testcontainers/ryuk:0.14.0 ryuk
