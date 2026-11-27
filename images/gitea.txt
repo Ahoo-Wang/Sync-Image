@@ -1,15 +1,19 @@
 # Gitea 和 Gitea CI 用到的镜像：ACK 节点访问不到 docker.io。
 # 每个镜像一个仓库、沿用原 tag：部署清单和 job 容器都按原名引用。
 
-# Gitea 服务端
+# Gitea 服务端，以及它的 session 和 cache（Valkey 官方镜像）
 gitea/gitea:28.4.0-rootless
+valkey/valkey:9.2.1-alpine valkey
 
 # Gitea Actions runner 和它的 DinD sidecar
 gitea/runner:6.0.1 gitea-runner
 docker:29-dind docker
 docker:27-dind docker
 
-# Gitea Actions 的 job 容器
+# Gitea Actions 的 job 容器。runner-images 是 Gitea 官方的 job 镜像，tag 带发布日期，
+# 固定不变，所以 job 可以复现；不要 -full 变体（约 19GB）。
+gitea/runner-images:ubuntu-24.04-v26.11.25 runner-images
+gitea/runner-images:ubuntu-22.04-v26.11.25 runner-images
 catthehacker/ubuntu:act-22.04 catthehacker
 maven:3.9-eclipse-temurin-21 maven
 alpine/k8s:1.37.2 alpine-k8s
