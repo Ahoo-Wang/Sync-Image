@@ -159,6 +159,51 @@ else
   bad 'post_status keeps the description within the 140 characters GitHub allows' "exit $code, printed ${#out} characters: ${out:0:40}…"
 fi
 
+# Record what post_status passes to gh, without running it: the exact
+# arguments matter, gh api has no --repo flag. post_status discards gh's
+# output, so the stub writes to a file.
+gh() {
+  printf '%s\n' "$@" > "$TMP/gh-args"
+}
+DRY_RUN=
+SHA=0000000000000000000000000000000000000000
+post_status owner/repo "$SHA" failure 'Merge conflict with main' 'https://example.com/run'
+code=$?
+unset -f gh
+DRY_RUN=1
+out=$(cat "$TMP/gh-args" 2>/dev/null)
+expected="api
+-X
+POST
+repos/owner/repo/statuses/$SHA
+-f
+state=failure
+-f
+context=lint/config
+-f
+description=Merge conflict with main
+-f
+target_url=https://example.com/run"
+if [ "$code" = 0 ] && [ "$out" = "$expected" ]; then
+  ok 'post_status calls gh api with the documented arguments'
+else
+  bad 'post_status calls gh api with the documented arguments' "exit $code" "expected: $(printf '%s' "$expected" | tr '\n' ' ')" "actual:   $(printf '%s' "$out" | tr '\n' ' ')"
+fi
+
+# The real gh must accept that command; the dry run returns before gh runs. A
+# fake token makes the request fail at authentication, so nothing is posted.
+# Requiring a non-zero exit proves that gh really ran.
+DRY_RUN=
+out=$(GH_TOKEN=not-a-real-token post_status owner/repo "$SHA" failure 'Merge conflict with main' 'https://example.com/run' 2>"$TMP/stderr")
+code=$?
+DRY_RUN=1
+if [ "$code" -ne 0 ] && [ -s "$TMP/stderr" ] &&
+  ! grep -q -e 'unknown flag' -e 'unknown shorthand' -e 'Usage:' -e 'unbound variable' "$TMP/stderr"; then
+  ok 'the real gh accepts the command post_status builds'
+else
+  bad 'the real gh accepts the command post_status builds' "exit $code, stderr: $(head -2 "$TMP/stderr" | tr '\n' ' ')"
+fi
+
 echo
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

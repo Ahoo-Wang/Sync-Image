@@ -85,7 +85,8 @@ post_status() {
     printf '%s\t%s\n' "$3" "$description"
     return 0
   fi
-  gh api --repo "$1" -X POST "repos/$1/statuses/$2" \
+  # gh api has no --repo flag; the endpoint carries the full repository path.
+  gh api -X POST "repos/$1/statuses/$2" \
     -f state="$3" -f context="$CONTEXT" -f description="$description" -f target_url="$5" > /dev/null
 }
 
