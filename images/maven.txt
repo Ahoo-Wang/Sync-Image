@@ -1,0 +1,2 @@
+# Gitea Actions 的 job 容器。
+maven:3.9-eclipse-temurin-21

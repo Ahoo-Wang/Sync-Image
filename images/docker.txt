@@ -1,0 +1,2 @@
+# Gitea Actions runner 的 DinD sidecar。
+docker:27-dind

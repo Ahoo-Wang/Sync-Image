@@ -1,0 +1,23 @@
+name: Check
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Problems are annotated on the lines they are in.
+      - name: Check images and renovate.json
+        run: python3 mirror.py check
+
+      - name: Unit tests
+        run: python3 -m unittest -v

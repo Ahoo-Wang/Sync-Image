@@ -1,8 +1,0 @@
-# ClickHouse Server，固定版本。
-# Renovate 冻结（见 renovate.json 的 packageRules）：升级时手动改 tag。
-# 24.x 各取原正则范围内最新的补丁版；26.8.2-alpine 原在 commonly 分组。
-clickhouse/clickhouse-server:24.9.3.128: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:24.10.4.191: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:24.11.5.49: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:24.12.6.70: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"
-clickhouse/clickhouse-server:26.8.2-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/clickhouse"

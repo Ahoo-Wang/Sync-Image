@@ -1,0 +1,47 @@
+name: Sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/**"
+      - "mirror.py"
+      - ".regctl-version"
+      - ".github/workflows/sync.yml"
+  # Upstream tags move (latest, 27-dind, rebuilt patch tags) and failed copies
+  # need a retry; a run that finds nothing to do takes about a minute.
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Let a running sync finish; a newer run waits and then sees every change.
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install regctl
+        run: |
+          version=$(cat .regctl-version)
+          curl -fsSL -o /usr/local/bin/regctl \
+            "https://github.com/regclient/regclient/releases/download/${version}/regctl-linux-amd64"
+          chmod +x /usr/local/bin/regctl
+          regctl version --format '{{.VCSTag}}'
+
+      - name: Sync
+        run: python3 mirror.py sync
+        env:
+          REGISTRY_USERNAME: ${{ secrets.ALIYUN_CR_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.ALIYUN_CR_PASSWORD }}
+          # Optional: logged-in pulls have a higher Docker Hub rate limit.
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
