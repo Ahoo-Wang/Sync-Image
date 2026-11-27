@@ -201,7 +201,7 @@ class CheckTest(unittest.TestCase):
     def test_the_repository_renovate_json_uses_the_grammar(self):
         minor_lanes, problems = mirror.check_renovate((mirror.ROOT / "renovate.json").read_text())
         self.assertEqual(problems, [])
-        self.assertEqual(minor_lanes, {"alpine/k8s"})
+        self.assertEqual(minor_lanes, {"alpine/k8s", "mongo"})
 
     def test_renovate_reads_the_same_files_and_lines(self):
         files = re.compile(mirror.RENOVATE_FILES.strip("/"))

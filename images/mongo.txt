@@ -1,0 +1,4 @@
+# MongoDB 的正式大版本是 X.0（7.0、8.0），8.1～8.3 是快速发布版，不建议自建生产环境使用。
+# 所以 mongo 在 renovate.json 的 minor-lane 规则里：每个 X.0 一行，Renovate 只升补丁版本。
+mongo:8.0.38
+mongo:7.0.48

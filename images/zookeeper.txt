@@ -1,0 +1,2 @@
+# 只有 Kafka 3.x 或其他还依赖 ZooKeeper 的组件才需要。
+zookeeper:3.9.7
