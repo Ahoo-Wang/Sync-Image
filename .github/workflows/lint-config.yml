@@ -34,8 +34,11 @@ jobs:
       - name: Test lint-config.sh
         run: scripts/lint-config.test.sh
 
+      - name: Test lint-renovate-prs.sh
+        run: scripts/lint-renovate-prs.test.sh
+
       - name: Shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck -x -P SCRIPTDIR scripts/*.sh
 
       - name: Lint image configs
         run: scripts/lint-config.sh

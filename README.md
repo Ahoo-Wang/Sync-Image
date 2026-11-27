@@ -32,6 +32,10 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
   checks group file names, runs the script tests and shellcheck, and reports
   duplicate mapping lines. Renovate bumps every line of the same image to the
   same version, so lines that used to be different versions can become
-  identical; delete the extra lines.
+  identical; delete the extra lines. Renovate pushes with `GITHUB_TOKEN`, so
+  on its own pull requests that workflow waits for approval. The Renovate
+  workflow therefore runs
+  [`scripts/lint-renovate-prs.sh`](./scripts/lint-renovate-prs.sh) afterwards
+  and posts the result as a `lint/config` status on each Renovate PR.
 
 Required repository secrets: `ALIYUN_CR_USERNAME`, `ALIYUN_CR_PASSWORD`.
