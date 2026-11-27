@@ -1,0 +1,6 @@
+# ClickHouse Server 的固定版本。24.x 各取一条版本线上最新的补丁版。
+clickhouse/clickhouse-server:24.9.3.128
+clickhouse/clickhouse-server:24.10.4.191
+clickhouse/clickhouse-server:24.11.5.49
+clickhouse/clickhouse-server:24.12.6.70
+clickhouse/clickhouse-server:26.8.2-alpine

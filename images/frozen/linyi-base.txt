@@ -1,0 +1,20 @@
+# linyi 基础镜像
+#
+# linyi-k8s（ACK）与 Gitea CI 访问不到 Docker Hub，而存量服务的 Dockerfile 直接 FROM 这些镜像。
+# 这里先同步到个人命名空间的单一仓库 linyi-base，再由 linyi/cicd-assets 的 workflow
+# 搬进公司命名空间（registry.cn-shanghai.aliyuncs.com/linyeah），服务最终只引用公司命名空间。
+#
+# 盘点依据（2026-11-24）：70 个迁移仓当前默认分支里指向 Docker Hub 的 FROM，共 7 个镜像、25 处：
+#   adoptopenjdk/openjdk11  11 个仓，JDK_VERSION 全部是 jdk11u-centos-nightly-slim
+#   nginx 1.23.3 / latest   4 个仓
+#   node 14.16.0 / 14.17.3 / 16.8.0   3 个仓
+#   busybox latest          1 个仓
+#
+# 版本必须与存量 Dockerfile 一致，所以放在 frozen/ 里，只手动改。
+adoptopenjdk/openjdk11:jdk11u-centos-nightly-slim adoptopenjdk-openjdk11
+nginx:1.23.3 nginx
+nginx:latest nginx
+node:14.16.0 node
+node:14.17.3 node
+node:16.8.0 node
+busybox:latest busybox

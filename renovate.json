@@ -1,54 +1,77 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "timezone": "Asia/Shanghai",
-  "labels": ["dependencies"],
-  "commitMessagePrefix": "fix(deps)",
+  "labels": [
+    "dependencies"
+  ],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "fix",
+  "semanticCommitScope": "deps",
   "commitMessageTopic": "{{depName}}",
-  "rangeStrategy": "bump",
-  "lockFileMaintenance": { "enabled": false },
   "prConcurrentLimit": 20,
   "prHourlyLimit": 20,
-  "autoReplaceGlobalMatch": true,
   "packageRules": [
     {
-      "description": "Frozen groups: pinned versions change only by hand",
+      "description": "Lanes: a line stays within its major version, where semver promises compatibility. Updates to a newer major wait on the Dependency Dashboard; start the new lane by adding a line.",
       "matchFileNames": [
-        "config/clickhouse-images.yaml",
-        "config/flink-images.yaml",
-        "config/kafka-ui-images.yaml",
-        "config/linyi-base-images.yaml"
+        "images/*.txt"
       ],
-      "enabled": false
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
     },
     {
-      "description": "node 22: update only within major 22, so the 22/24/26 lines never collapse into one",
-      "matchDepNames": ["node"],
-      "matchCurrentVersion": "/^22\\./",
-      "allowedVersions": "/^22\\./"
+      "description": "Lanes for 0.x: semver promises compatibility only within a minor version, so each minor version is a lane.",
+      "matchFileNames": [
+        "images/*.txt"
+      ],
+      "matchCurrentVersion": "/^v?0\\./",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "dependencyDashboardApproval": true
     },
     {
-      "description": "node 24: update only within major 24, so the 22/24/26 lines never collapse into one",
-      "matchDepNames": ["node"],
-      "matchCurrentVersion": "/^24\\./",
-      "allowedVersions": "/^24\\./"
-    },
-    {
-      "description": "node 26: update only within major 26, so the 22/24/26 lines never collapse into one",
-      "matchDepNames": ["node"],
-      "matchCurrentVersion": "/^26\\./",
-      "allowedVersions": "/^26\\./"
+      "description": "Minor lanes: these upstreams start a new release line at every minor version (alpine/k8s follows Kubernetes, and kubectl supports one minor version of skew).",
+      "matchFileNames": [
+        "images/*.txt"
+      ],
+      "matchDepNames": [
+        "alpine/k8s"
+      ],
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "dependencyDashboardApproval": true
     }
   ],
   "customManagers": [
     {
-      "description": "Update container image tags in config/*-images.yaml; with autoReplaceGlobalMatch the version is replaced in both the source tag and the destination tag",
       "customType": "regex",
-      "fileMatch": ["^config/.*-images\\.yaml$"],
+      "description": "Image tags in images/*.txt. images/frozen/ is not managed. mirror.py check requires this pattern and expression verbatim.",
+      "managerFilePatterns": [
+        "/^images/[^/]+\\.txt$/"
+      ],
       "matchStrings": [
-        "(?m)^(?<depName>[^\\s:#][^:\\s]*):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*):\\s\"[^\"]*\"\\s*$"
+        "(?m)^(?<depName>[a-z0-9]+(?:[._-]+[a-z0-9]+)*(?:/[a-z0-9]+(?:[._-]+[a-z0-9]+)*)*):(?<currentValue>[A-Za-z0-9][A-Za-z0-9._-]*)(?:[ \\t]+[A-Za-z0-9][A-Za-z0-9._-]*)?[ \\t]*$"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "The regctl release that the Sync workflow installs",
+      "managerFilePatterns": [
+        "/^\\.regctl-version$/"
+      ],
+      "matchStrings": [
+        "^(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "regclient/regclient",
+      "datasourceTemplate": "github-releases"
     }
   ]
 }

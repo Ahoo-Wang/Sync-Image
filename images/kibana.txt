@@ -1,0 +1,1 @@
+docker.elastic.co/kibana/kibana:9.5.7

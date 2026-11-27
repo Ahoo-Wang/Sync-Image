@@ -1,0 +1,2 @@
+# Gitea Actions runner。
+gitea/act_runner:0.6.1

@@ -1,2 +1,0 @@
-# nginx
-nginx:1.31.10-alpine: "registry.cn-shanghai.aliyuncs.com/ahoo/nginx"

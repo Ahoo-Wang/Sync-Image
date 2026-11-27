@@ -1,2 +1,0 @@
-ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg"
-ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie: "registry.cn-shanghai.aliyuncs.com/ahoo/cnpg:postgresql_18.7-system-trixie"

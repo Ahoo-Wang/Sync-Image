@@ -2,6 +2,8 @@
 .idea/
 # Mac
 .DS_Store
+# Python
+__pycache__/
 # Local tooling
 .claude/
 .mimosa/
