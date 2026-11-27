@@ -1,0 +1,14 @@
+# linyi 的 Gitea 流水线（fork 自 wow-project-template）用到的镜像：Gitea CI 访问不到 Docker Hub。
+#
+# 放在 frozen/ 里：使用方都写死了 tag，版本只能和它们一起手动改。
+#   mongo:7.0       集成测试里写死的 MongoDBContainer("mongo:7.0")。Testcontainers 用
+#                   hub.image.name.prefix 改写镜像名，所以必须是 ahoo-mirror/mongo:7.0。
+#                   7.0 是滚动 tag，内容照常跟随上游的 7.0 补丁版本。
+#   ryuk 0.14.0     testcontainers 2.0.5 默认的 ryuk 镜像，版本跟着 testcontainers 走。
+#   eclipse-temurin 构建用的 JDK 21：集群从 GitHub release 下载 Temurin 太慢，job 从镜像里取。
+#                   上游这个 tag 只有 linux/amd64。
+#   helm            流水线用 helm template 校验 wow-service chart，runner-images 里没有 helm。
+mongo:7.0 mongo
+testcontainers/ryuk:0.14.0 ryuk
+eclipse-temurin:21.0.13.1_2-jdk-noble eclipse-temurin
+alpine/helm:4.3.2 helm
