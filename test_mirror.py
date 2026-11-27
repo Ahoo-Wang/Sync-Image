@@ -95,7 +95,7 @@ class ParseTest(unittest.TestCase):
 class CheckTest(unittest.TestCase):
     def test_valid(self):
         self.assertEqual(check({"images/nginx.txt": ["nginx:1.31.10-alpine"],
-                                "images/frozen/linyi-base.txt": ["nginx:1.23.3 nginx", "nginx:latest nginx"]}), [])
+                                "images/frozen/legacy.txt": ["nginx:1.23.3 nginx", "nginx:latest nginx"]}), [])
 
     def test_no_image_lists(self):
         self.assertEqual(check({}), ["images/: no image lists"])
@@ -299,8 +299,8 @@ class SyncTest(unittest.TestCase):
         self.assertEqual(mirror.sync_image(image("busybox:1.38"), self.registry), ["linux/amd64", "linux/arm64/v8"])
 
     def test_a_prefixed_destination(self):
-        mirror.sync_image(image("busybox:1.38", "bb", "linyi-base"), self.registry)
-        self.assertIn(f"{R}/linyi-base:bb_1.38", self.registry.manifests)
+        mirror.sync_image(image("busybox:1.38", "bb", "legacy"), self.registry)
+        self.assertIn(f"{R}/legacy:bb_1.38", self.registry.manifests)
 
     def test_a_single_manifest_is_wrapped_in_an_index(self):
         single = self.registry.image("tool", "linux", "amd64", tag="1")

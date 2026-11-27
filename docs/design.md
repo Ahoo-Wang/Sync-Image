@@ -14,7 +14,7 @@ linyi-k8s（ACK）和 Gitea CI 访问不到 Docker Hub、GHCR 等上游仓库，
 1. ACR 拒收 OCI 1.1 attestation manifest（`unknown manifest class for application/vnd.oci.empty.v1+json`），只能重建 index，不能整份复制。
 2. Docker Hub 对 manifest 的 GET 限流，HEAD 不计数。
 3. 版本靠 Renovate 升级；它用 `GITHUB_TOKEN` 推送，因此它的 PR 上的 `pull_request` workflow 要人工批准，而且它推不了 `.github/workflows/` 里的改动。
-4. ACR 里的目标路径被集群、Dockerfile 和 `linyi/cicd-assets` 引用，是对外的契约。这次重写把命名空间从 `ahoo` 换成了 `ahoo-mirror`，仓库名和 tag 不变：57 条映射逐条比对过，除命名空间外新旧完全相同。旧命名空间 `ahoo` 里的镜像保留，但不再更新。
+4. ACR 里的目标路径被集群和 Dockerfile 引用，是对外的契约。这次重写把命名空间从 `ahoo` 换成了 `ahoo-mirror`，仓库名和 tag 不变：保留下来的 50 条映射逐条比对过，除命名空间外新旧完全相同。旧命名空间 `ahoo` 里的镜像保留，但不再更新。
 
 ## 2. 数据：从文件名和一行推出全部信息
 
@@ -28,7 +28,7 @@ images/<repository>.txt          → registry.cn-shanghai.aliyuncs.com/ahoo-mirr
 
 于是版本号每行只出现一次，旧格式下的三类错误从结构上不可能出现：目标 tag 与源 tag 不一致、registry 写错、一个文件写进别的仓库。`ls images/` 就是 ACR 里的仓库清单。原来按用途合在 `gitea-images.yaml` 里的 7 个镜像拆成了 7 个文件，用途写在各自的注释里。
 
-**冻结是目录，不是名单。** 原来冻结靠 `renovate.json` 里列出文件名，改名或新增时容易漏（linyi-base 的版本就被 Renovate 改过）。现在 `images/frozen/` 下的文件 Renovate 根本不读，放进去就冻结了，不需要另外登记。
+**冻结是目录，不是名单。** 原来冻结靠 `renovate.json` 里列出文件名，改名或新增时容易漏，冻结分组的版本就被 Renovate 改过。现在 `images/frozen/` 下的文件 Renovate 根本不读，放进去就冻结了，不需要另外登记。
 
 **一套语法。** 原来有三个解析器：同步脚本用 YAML，lint 按原始行，Renovate 用正则。三者能接受的内容并不相同。现在语法只在 `mirror.py` 里定义一次（`LINE`、`RENOVATE_MATCH`、`RENOVATE_FILES`），`check` 要求 `renovate.json` 里逐字使用同一个表达式。凡是会被同步的行，Renovate 都能看到。
 
@@ -86,8 +86,8 @@ regctl 的版本写在 `.regctl-version` 里，而不是 workflow 里，这样 R
 ## 7. 已知限制
 
 - **`ahoo-mirror` 命名空间要先在 ACR 控制台创建**，并打开「自动创建仓库」，否则第一次推送新仓库会被拒绝。集群需要匿名拉取的话，默认仓库类型要设为公开。
-- **合入后的第一次运行会完整复制全部 57 个镜像**：新命名空间是空的，所有层都要重新上传，耗时取决于镜像总大小。57 个镜像里有 50 个来自 Docker Hub，每个要读 3 次 manifest（index 和两个平台；两次 GET 记一次 pull），合计约 75 次 pull 配额；如果被限流，第二天的运行会接着做完。配置 `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` 可以提高限额。
-- **使用方要改地址。** 集群清单、Dockerfile 和 `linyi/cicd-assets` 里引用 `ahoo/...` 的地方都要改成 `ahoo-mirror/...`；改之前它们拿到的是旧命名空间里不再更新的镜像。
+- **合入后的第一次运行会完整复制全部 50 个镜像**：新命名空间是空的，所有层都要重新上传，耗时取决于镜像总大小。50 个镜像里有 43 个来自 Docker Hub，每个要读 3 次 manifest（index 和两个平台；两次 GET 记一次 pull），合计约 65 次 pull 配额；如果被限流，第二天的运行会接着做完。配置 `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` 可以提高限额。
+- **使用方要改地址。** 集群清单和 Dockerfile 里引用 `ahoo/...` 的地方都要改成 `ahoo-mirror/...`；改之前它们拿到的是旧命名空间里不再更新的镜像。
 - **ACR 接受这种 index 尚未实测。** 本地对 distribution registry 跑通了完整流程；ACR 以前接受的是 `regctl index create` 生成的 OCI index，新 index 多了注解，属于 OCI 1.0 的标准字段。如果 ACR 拒收，sync 会失败并报错，已有的 tag 不受影响。
 - **跟踪上游意味着内容会变。** 想要不变的内容，就选不会移动的 tag，或者把它放进 `images/frozen/` 并选具体版本。
 - **workflow 里的 action 需要手动升级**（`GITHUB_TOKEN` 的限制）。换成 GitHub App 的 token 才能让 Renovate 自己升级。
