@@ -221,6 +221,8 @@ class FakeRegistry:
         self.manifests = {}  # "repo:tag" or "repo@digest" -> (descriptor, body)
         self.blobs = {}  # (repo, digest) -> bytes
         self.copies = []
+        self.failures = {}  # ref -> how many more reads of it fail with a server error
+        self.reads = []
 
     def push(self, repo: str, body: dict, tag: str = None, media_type: str = None) -> dict:
         data = json.dumps(body).encode()
@@ -246,6 +248,11 @@ class FakeRegistry:
 
     def __call__(self, *args: str, input: bytes = None) -> bytes:
         command, ref = args[:2], args[2]
+        if command == ("manifest", "get"):
+            self.reads.append(ref)
+            if self.failures.get(ref):
+                self.failures[ref] -= 1
+                raise mirror.SyncError(f"failed to get manifest {ref}: request failed: unknown [http 500]")
         if ref not in self.manifests and command in {("manifest", "head"), ("manifest", "get"), ("image", "copy")}:
             raise mirror.SyncError(f"failed to request manifest {ref}: not found")
         if command == ("manifest", "head"):
@@ -289,8 +296,8 @@ class SyncTest(unittest.TestCase):
                                                   self.arm64])
 
     def test_an_index_keeps_only_the_mirrored_platforms(self):
-        platforms = mirror.sync_image(image("busybox:1.38"), self.registry)
-        self.assertEqual(platforms, ["linux/amd64", "linux/arm64/v8"])
+        copy = mirror.sync_image(image("busybox:1.38"), self.registry)
+        self.assertEqual(copy, mirror.Copy("new", ["linux/amd64", "linux/arm64/v8"]))
         self.assertEqual(self.registry.copies, [
             (f"busybox@{self.amd64['digest']}", f"{R}/busybox@{self.amd64['digest']}"),
             (f"busybox@{self.arm64['digest']}", f"{R}/busybox@{self.arm64['digest']}")])
@@ -310,13 +317,15 @@ class SyncTest(unittest.TestCase):
     def test_a_moved_source_tag_is_copied_again(self):
         mirror.sync_image(image("busybox:1.38"), self.registry)
         moved = self.registry.index("busybox", "1.38", [self.arm64])
-        self.assertEqual(mirror.sync_image(image("busybox:1.38"), self.registry), ["linux/arm64/v8"])
+        self.assertEqual(mirror.sync_image(image("busybox:1.38"), self.registry),
+                         mirror.Copy("source changed", ["linux/arm64/v8"]))
         self.assertEqual(self.registry.body(f"{R}/busybox:1.38")["annotations"][mirror.SOURCE_DIGEST],
                          moved["digest"])
 
     def test_a_destination_built_some_other_way_is_rebuilt(self):
         self.registry.manifests[f"{R}/busybox:1.38"] = self.registry.manifests["busybox:1.38"]
-        self.assertEqual(mirror.sync_image(image("busybox:1.38"), self.registry), ["linux/amd64", "linux/arm64/v8"])
+        self.assertEqual(mirror.sync_image(image("busybox:1.38"), self.registry),
+                         mirror.Copy("not built by sync", ["linux/amd64", "linux/arm64/v8"]))
 
     def test_a_prefixed_destination(self):
         mirror.sync_image(image("busybox:1.38", "bb", "legacy"), self.registry)
@@ -325,7 +334,7 @@ class SyncTest(unittest.TestCase):
     def test_a_single_manifest_is_wrapped_in_an_index(self):
         single = self.registry.image("tool", "linux", "amd64", tag="1")
         del single["platform"]
-        self.assertEqual(mirror.sync_image(image("tool:1", repository="tool"), self.registry), ["linux/amd64"])
+        self.assertEqual(mirror.sync_image(image("tool:1", repository="tool"), self.registry).platforms, ["linux/amd64"])
         self.assertEqual(self.registry.body(f"{R}/tool:1")["manifests"],
                          [dict(single, platform={"os": "linux", "architecture": "amd64"})])
 
@@ -335,6 +344,26 @@ class SyncTest(unittest.TestCase):
         for source in ["s390:1", "multi:1"]:
             with self.subTest(source=source), self.assertRaisesRegex(mirror.SyncError, "no linux/amd64 or linux/arm64"):
                 mirror.sync_image(image(source), self.registry)
+
+    def test_a_missing_destination_is_read_once(self):
+        mirror.sync_image(image("busybox:1.38"), self.registry)
+        self.assertEqual(self.registry.reads.count(f"{R}/busybox:1.38"), 1)
+
+    def test_a_failed_destination_read_is_retried(self):
+        mirror.sync_image(image("busybox:1.38"), self.registry)
+        self.registry.copies.clear()
+        self.registry.failures[f"{R}/busybox:1.38"] = 1
+        self.assertIsNone(mirror.sync_image(image("busybox:1.38"), self.registry))
+        self.assertEqual(self.registry.copies, [])
+
+    def test_an_unreadable_destination_is_copied_and_says_why(self):
+        mirror.sync_image(image("busybox:1.38"), self.registry)
+        self.registry.failures[f"{R}/busybox:1.38"] = 2
+        copy = mirror.sync_image(image("busybox:1.38"), self.registry)
+        self.assertEqual(copy.reason, f"destination unreadable: failed to get manifest {R}/busybox:1.38: "
+                                      "request failed: unknown [http 500]")
+        self.assertEqual(self.registry.body(f"{R}/busybox:1.38")["annotations"][mirror.SOURCE_DIGEST],
+                         self.source["digest"])
 
     def test_a_missing_source(self):
         with self.assertRaisesRegex(mirror.SyncError, "not found"):

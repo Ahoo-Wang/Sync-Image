@@ -306,22 +306,48 @@ def platform_name(descriptor: dict) -> str:
     return "/".join(filter(None, (platform["os"], platform["architecture"], platform.get("variant"))))
 
 
-def sync_image(image: Image, regctl: Regctl = regctl) -> Optional[List[str]]:
+@dataclass(frozen=True)
+class Copy:
+    reason: str  # why the destination was rebuilt
+    platforms: List[str]
+
+
+def read_destination(image: Image, regctl: Regctl) -> Tuple[Optional[dict], str]:
+    """The destination index, or None and why it is not there.
+
+    A missing tag is the normal case for a new line. Any other error, such as
+    a network or registry hiccup, is retried once: taken for a missing tag, it
+    would copy an unchanged image again.
+    """
+    reason = ""
+    for _ in range(2):
+        try:
+            return json.loads(regctl("manifest", "get", image.destination, "--format", "raw-body")), ""
+        except SyncError as error:
+            if "not found" in str(error).lower() or "[http 404]" in str(error):
+                return None, "new"
+            reason = f"destination unreadable: {error}"
+        except ValueError as error:
+            reason = f"destination unreadable: {error}"
+    return None, reason
+
+
+def sync_image(image: Image, regctl: Regctl = regctl) -> Optional[Copy]:
     """Make image.destination an index of the source's PLATFORMS manifests.
 
-    Return the platforms copied, or None when the destination was already
+    Return what was copied and why, or None when the destination was already
     built from the current source digest. Aliyun ACR rejects OCI attestation
     manifests (unknown manifest class for application/vnd.oci.empty.v1+json),
     so the index is rebuilt without them rather than copied.
     """
     source = json.loads(regctl("manifest", "head", image.source, "--format", "{{json .GetDescriptor}}"))
     digest = source["digest"]
-    try:
-        current = json.loads(regctl("manifest", "get", image.destination, "--format", "raw-body"))
-    except SyncError:
-        current = {}
-    if (current.get("annotations") or {}).get(SOURCE_DIGEST) == digest:
-        return None
+    current, reason = read_destination(image, regctl)
+    if current is not None:
+        recorded = (current.get("annotations") or {}).get(SOURCE_DIGEST)
+        if recorded == digest:
+            return None
+        reason = "source changed" if recorded else "not built by sync"
 
     # Read the manifest by digest, so every step sees the same version of the tag.
     manifest = json.loads(regctl("manifest", "get", f"{image.name}@{digest}", "--format", "raw-body"))
@@ -344,7 +370,7 @@ def sync_image(image: Image, regctl: Regctl = regctl) -> Optional[List[str]]:
     }
     regctl("manifest", "put", image.destination, "--content-type", OCI_INDEX,
            input=json.dumps(index, indent=2).encode())
-    return [platform_name(descriptor) for descriptor in descriptors]
+    return Copy(reason, [platform_name(descriptor) for descriptor in descriptors])
 
 
 def login(regctl: Regctl = regctl) -> None:
@@ -374,17 +400,18 @@ def sync(jobs: int) -> int:
         for future in as_completed(futures):
             image = futures[future]
             try:
-                platforms = future.result()
+                copy = future.result()
             except Exception as error:  # noqa: BLE001 - one image must not stop the others
                 failed.append((image, str(error)))
                 annotate(Problem(image.path, image.line, f"{image.source}: {error}"))
                 continue
-            if platforms is None:
+            if copy is None:
                 current += 1
                 print(f"current  {image.source} -> {image.destination}")
             else:
-                synced.append((image, ", ".join(platforms)))
-                print(f"synced   {image.source} -> {image.destination} ({', '.join(platforms)})")
+                detail = f"{', '.join(copy.platforms)}; {copy.reason}"
+                synced.append((image, detail))
+                print(f"synced   {image.source} -> {image.destination} ({detail})")
 
     summary = f"{len(todo)} images: {current} current, {len(synced)} synced, {len(failed)} failed"
     print(summary)
