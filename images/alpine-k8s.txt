@@ -1,2 +1,0 @@
-# Gitea Actions 的 job 容器。
-alpine/k8s:1.37.2

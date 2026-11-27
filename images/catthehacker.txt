@@ -1,2 +1,0 @@
-# Gitea Actions 的 job 容器。
-catthehacker/ubuntu:act-22.04

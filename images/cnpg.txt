@@ -1,2 +1,2 @@
 ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2
-ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie postgresql
+ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie cnpg:postgresql

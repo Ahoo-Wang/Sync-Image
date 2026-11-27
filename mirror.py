@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Mirror upstream container images into Aliyun ACR.
 
-Each file images/<repository>.txt lists upstream images, one per line:
+Each file images/<group>.txt lists upstream images, one per line. A group is
+a product (otel) or the images one application needs (gitea). A line is
+<image>:<tag>, optionally followed by where it goes, and is mirrored to
 
-    nginx:1.31.10-alpine
-    otel/autoinstrumentation-java:2.34.0 autoinstrumentation-java
+    nginx:1.31.10-alpine                     <REGISTRY>/<group>:1.31.10-alpine
+    gitea/runner:6.0.1 gitea-runner          <REGISTRY>/gitea-runner:6.0.1
+    otel/java:2.34.0 otel:java               <REGISTRY>/otel:java_2.34.0
 
-A line is <image>:<tag>, optionally followed by a tag prefix, and is mirrored to
-
-    registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>:<tag>
-    registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>:<prefix>_<tag>
+so the repository is the group's name unless the line names one, and the tag
+is the source tag, after <prefix>_ if the line gives a prefix.
 
 Each line of images/*.txt is a lane: Renovate keeps its tag current within
 the compatibility range the upstream promises, by semver a major version, or a
@@ -47,10 +48,11 @@ PLATFORMS = (("linux", "amd64"), ("linux", "arm64"))
 _NAME = r"[a-z0-9]+(?:[._-]+[a-z0-9]+)*"
 IMAGE = rf"{_NAME}(?:/{_NAME})*"
 TAG = r"[A-Za-z0-9][A-Za-z0-9._-]*"
-LINE = re.compile(rf"(?P<image>{IMAGE}):(?P<tag>{TAG})(?:[ \t]+(?P<prefix>{TAG}))?[ \t]*")
-FILE = re.compile(rf"images/(?P<frozen>frozen/)?(?P<repository>{_NAME})\.txt")
+LINE = re.compile(rf"(?P<image>{IMAGE}):(?P<tag>{TAG})"
+                  rf"(?:[ \t]+(?P<repository>{_NAME})(?::(?P<prefix>{TAG}))?)?[ \t]*")
+FILE = re.compile(rf"images/(?P<frozen>frozen/)?(?P<group>{_NAME})\.txt")
 RENOVATE_FILES = r"/^images/[^/]+\.txt$/"
-RENOVATE_MATCH = rf"(?m)^(?<depName>{IMAGE}):(?<currentValue>{TAG})(?:[ \t]+{TAG})?[ \t]*$"
+RENOVATE_MATCH = rf"(?m)^(?<depName>{IMAGE}):(?<currentValue>{TAG})(?:[ \t]+{_NAME}(?::{TAG})?)?[ \t]*$"
 
 # What Renovate's docker versioning treats as a version: numbers, then an
 # optional -suffix. An update keeps the suffix and the number of components.
@@ -138,17 +140,18 @@ def parse(files: Files) -> Tuple[List[Image], List[Problem]]:
             continue
         file = FILE.fullmatch(path)
         if not file:
-            problems.append(Problem(path, 0, "not an image list: name it images/<repository>.txt "
-                                             "or images/frozen/<repository>.txt, in lowercase"))
+            problems.append(Problem(path, 0, "not an image list: name it images/<group>.txt "
+                                             "or images/frozen/<group>.txt, in lowercase"))
             continue
-        repository = f"{REGISTRY}/{file['repository']}"
         for number, text in enumerate(files[path].splitlines(), 1):
             if not text.strip() or text.lstrip().startswith("#"):
                 continue
             line = LINE.fullmatch(text)
             if not line:
-                problems.append(Problem(path, number, "expected <image>:<tag> or <image>:<tag> <prefix>"))
+                problems.append(Problem(path, number, "expected <image>:<tag>, optionally followed by "
+                                                      "<repository> or <repository>:<prefix>"))
                 continue
+            repository = f"{REGISTRY}/{line['repository'] or file['group']}"
             images.append(Image(path, number, line["image"], line["tag"], line["prefix"],
                                 repository, bool(file["frozen"])))
     return images, problems
@@ -180,7 +183,7 @@ def check(files: Files) -> List[Problem]:
             continue
         first = by_lane.setdefault(found[0], image)
         if first is not image:
-            message = (f"Renovate would update this line and line {first.line} to the same tag, "
+            message = (f"Renovate would update this line and {first.path}:{first.line} to the same tag, "
                        f"both are in lane {found[1]}; keep one line per lane")
             if image.name not in minor_lanes and "." not in found[1]:
                 message += (f', or add "{image.name}" to the minor-lane rule in renovate.json if each of its '
@@ -194,14 +197,15 @@ def lane(image: Image, minor_lanes: Set[str]) -> Optional[Tuple[tuple, str]]:
 
     Renovate moves a line to the newest version with the same suffix and number
     of components inside its lane, so two lines with the same key end up as
-    one tag. Frozen lines and tags that are not versions have no lane.
+    one destination tag. Frozen lines and tags that are not versions have no
+    lane.
     """
     version = VERSION.fullmatch(image.tag)
     if image.frozen or not version:
         return None
     parts = version["release"].split(".")
     name = ".".join(parts[:2 if parts[0] == "0" or image.name in minor_lanes else 1])
-    return (image.path, image.name, image.prefix, version["suffix"], len(parts), name), name
+    return (image.repository, image.prefix, image.name, version["suffix"], len(parts), name), name
 
 
 def lost_lanes(base: Files, merged: Files) -> List[Problem]:

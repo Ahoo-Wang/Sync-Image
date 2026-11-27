@@ -12,13 +12,16 @@ Every mirrored image is at
 registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>:<tag>
 ```
 
-Each file in [`images/`](./images) is one repository, and each line in it is
-one tag:
+Each file in [`images/`](./images) is a group: one image (`nginx`), a product
+(`otel`), or the images one application needs (`gitea`). Each line in it is
+one tag. A line goes to the repository named after its group, unless it names
+another one:
 
 | File | Line | Pull |
 |---|---|---|
 | `images/nginx.txt` | `nginx:1.31.10-alpine` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/nginx:1.31.10-alpine` |
-| `images/otel.txt` | `otel/autoinstrumentation-java:2.34.0 autoinstrumentation-java` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/otel:autoinstrumentation-java_2.34.0` |
+| `images/gitea.txt` | `gitea/runner:6.0.1 gitea-runner` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/gitea-runner:6.0.1` |
+| `images/otel.txt` | `otel/autoinstrumentation-java:2.34.0 otel:autoinstrumentation-java` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/otel:autoinstrumentation-java_2.34.0` |
 
 A mirrored tag holds the `linux/amd64` and `linux/arm64` images of its
 upstream tag, as they are now. It is compared with upstream after every
@@ -26,10 +29,13 @@ change to `images/` and once a day, and copied again when upstream has moved.
 
 ## Adding an image
 
-1. Open `images/<repository>.txt`, or create it for a new repository. The
-   name is lowercase letters, digits, `.`, `_` and `-`.
-2. Add a line `<image>:<tag>`. If the repository holds more than one image,
-   add a prefix: `<image>:<tag> <prefix>` is mirrored as `<prefix>_<tag>`.
+1. Open the group's file `images/<group>.txt`, or create it. Names are
+   lowercase letters, digits, `.`, `_` and `-`.
+2. Add a line `<image>:<tag>`, optionally followed by where it goes:
+   - `<repository>` mirrors it to that repository instead of the group's;
+   - `<repository>:<prefix>` also puts `<prefix>_` before the tag, so that
+     several images can share one repository.
+
    Lines that start with `#` are comments.
 3. Open a pull request. The Check workflow marks any problem on its line.
    After the merge, the image is in ACR within minutes.
@@ -77,8 +83,7 @@ and pushes a new index with just those two. Attestation manifests are left out,
 because ACR rejects them.
 
 **Check.**
-- Every file in `images/` is named `<repository>.txt` or
-  `frozen/<repository>.txt`.
+- Every file in `images/` is named `<group>.txt` or `frozen/<group>.txt`.
 - Every line matches the line format above. Renovate reads lines with the same
   expression, and `renovate.json` must use it verbatim, so every mirrored line
   can be updated.

@@ -1,2 +1,0 @@
-# Gitea 的数据库。gitea helm chart 的 wrapper 只能覆盖 image.repository，所以单独一个仓库、沿用原 tag。
-bitnamilegacy/postgresql:17.6.0-debian-12-r4
