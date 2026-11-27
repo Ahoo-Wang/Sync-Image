@@ -18,15 +18,18 @@ linyi-k8s（ACK）和 Gitea CI 访问不到 Docker Hub、GHCR 等上游仓库，
 
 ## 2. 数据：从文件名和一行推出全部信息
 
-旧格式 `"<src>:<tag>": "<registry>/ahoo/<repo>[:<dst-tag>]"` 每行写两遍版本号和一遍 registry，靠 `autoReplaceGlobalMatch` 让 Renovate 同时改两处，再靠 lint 检查两处一致。观察现有的 57 行：目标 tag 一律是 `<tag>` 或 `<prefix>_<tag>`，registry 和命名空间一律相同，一个文件基本对应一个仓库。能推出来的就不写：
+旧格式 `"<src>:<tag>": "<registry>/ahoo/<repo>[:<dst-tag>]"` 每行写两遍版本号和一遍 registry，靠 `autoReplaceGlobalMatch` 让 Renovate 同时改两处，再靠 lint 检查两处一致。观察现有的 57 行：目标 tag 一律是 `<tag>` 或 `<prefix>_<tag>`，registry 和命名空间一律相同。能推出来的就不写：
 
 ```
-images/<repository>.txt          → registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>
-<image>:<tag>                    → <repository>:<tag>
-<image>:<tag> <prefix>           → <repository>:<prefix>_<tag>
+images/<group>.txt
+<image>:<tag>                         → <group>:<tag>
+<image>:<tag> <repository>            → <repository>:<tag>
+<image>:<tag> <repository>:<prefix>   → <repository>:<prefix>_<tag>
 ```
 
-于是版本号每行只出现一次，旧格式下的三类错误从结构上不可能出现：目标 tag 与源 tag 不一致、registry 写错、一个文件写进别的仓库。`ls images/` 就是 ACR 里的仓库清单。原来按用途合在 `gitea-images.yaml` 里的 7 个镜像拆成了 7 个文件，用途写在各自的注释里。
+第二列就是目标去掉 `_<tag>` 的样子；不写时，仓库就是分组名。于是版本号每行只出现一次，目标 tag 与源 tag 不一致、registry 写错这两类错误从结构上不可能出现。
+
+**文件是分组，不是仓库。** 一个分组可以是一个镜像（`nginx`）、一个产品（`otel`，多个镜像靠前缀共用一个仓库），也可以是一个应用需要的一组镜像（`gitea`：服务端、runner、DinD 和 job 容器，各自一个仓库、沿用原 tag，因为部署清单和 job 容器都按原名引用）。按应用分组，是为了让"这个应用依赖哪些镜像"、"不用了就整组删掉"都只看一个文件。仓库名写在行上，所以分组怎么划都不影响 ACR 里的地址。
 
 **冻结是目录，不是名单。** 原来冻结靠 `renovate.json` 里列出文件名，改名或新增时容易漏，冻结分组的版本就被 Renovate 改过。现在 `images/frozen/` 下的文件 Renovate 根本不读，放进去就冻结了，不需要另外登记。
 
@@ -60,13 +63,13 @@ images/<repository>.txt          → registry.cn-shanghai.aliyuncs.com/ahoo-mirr
 
 新的一条线靠人加一行：Dashboard 的「Pending Approval」列出上游的新主版本，作为提醒。如果在 Dashboard 上批准，Renovate 会开一个**替换**旧行的 PR，旧的线就丢了；所以 `check-prs` 比较合入前后的线，丢了线的 PR 标为 failure，提示改为新增一行。Renovate 只改 tag、不删行，所以合入后少了某条线，就说明它把一行挪到了别的线上。
 
-这对 0.x 的 12 行（altinity、act_runner、metabase、new-api、OTel Collector/Operator、SigNoz 的几个组件）和 `alpine/k8s` 是行为变化：它们以后只自动升补丁版本，新的次版本要手动加行。这正是这些上游的兼容承诺：OTel Collector 的每个 0.x 次版本都列出了不兼容变更，metabase 的 0.65 就是它的第 65 个大版本。
+这对 0.x 的 10 行（altinity、metabase、new-api、OTel Collector/Operator、SigNoz 的几个组件）和 `alpine/k8s` 是行为变化：它们以后只自动升补丁版本，新的次版本要手动加行。这正是这些上游的兼容承诺：OTel Collector 的每个 0.x 次版本都列出了不兼容变更，metabase 的 0.65 就是它的第 65 个大版本。
 
 ## 5. 检查：每条规则对应一种真实发生过或会发生的故障
 
 | 规则 | 防止的故障 |
 |---|---|
-| 文件名必须是 `images/<repository>.txt` 或 `images/frozen/<repository>.txt` | 文件名写错后被所有工具静默忽略 |
+| 文件名必须是 `images/<group>.txt` 或 `images/frozen/<group>.txt` | 文件名写错后被所有工具静默忽略 |
 | 每行符合语法；`renovate.json` 逐字使用同一表达式 | Renovate 看不到某一行，这一行永远不升级 |
 | 一个目标只有一行 | 重复行；两个源争同一个目标 |
 | 每条线只有一行 | 同一条线上的两行会被 Renovate 升级成同一个 tag（metabase 47 行剩 5 个版本、act_runner、node 14.x 都发生过） |

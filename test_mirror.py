@@ -51,12 +51,19 @@ class ParseTest(unittest.TestCase):
                          [("nginx:1.31.10-alpine", f"{R}/nginx:1.31.10-alpine", False)])
 
     def test_a_prefix_goes_before_the_tag(self):
-        images, _ = self.parse("images/otel.txt", "otel/autoinstrumentation-java:2.34.0 autoinstrumentation-java")
+        images, _ = self.parse("images/otel.txt", "otel/autoinstrumentation-java:2.34.0 otel:autoinstrumentation-java")
         self.assertEqual(images[0].destination, f"{R}/otel:autoinstrumentation-java_2.34.0")
+
+    def test_a_line_names_its_repository(self):
+        images, problems = self.parse("images/gitea.txt", "bitnamilegacy/valkey:8.1.3-debian-12-r3 valkey",
+                                      "gitea/act_runner:0.6.1 act-runner", "docker:27-dind", "foo/x:1 otel:x")
+        self.assertEqual(problems, [])
+        self.assertEqual([i.destination for i in images], [f"{R}/valkey:8.1.3-debian-12-r3", f"{R}/act-runner:0.6.1",
+                                                           f"{R}/gitea:27-dind", f"{R}/otel:x_1"])
 
     def test_registries_and_deep_paths(self):
         images, problems = self.parse("images/otel.txt",
-                                      "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.163.0 x")
+                                      "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:v0.163.0 otel:x")
         self.assertEqual(problems, [])
         self.assertEqual(images[0].name, "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator")
 
@@ -66,19 +73,21 @@ class ParseTest(unittest.TestCase):
 
     def test_comments_blank_lines_and_whitespace(self):
         images, problems = self.parse("images/busybox.txt", "# busybox", "", "   ", "  # note", "busybox:1.38  ",
-                                      "busybox:1.37\tbb\t")
+                                      "busybox:1.37\tbusybox:bb\t")
         self.assertEqual(problems, [])
         self.assertEqual([(i.line, i.destination) for i in images],
                          [(5, f"{R}/busybox:1.38"), (6, f"{R}/busybox:bb_1.37")])
 
     def test_lines_that_are_not_images(self):
         for line in ["nginx", "nginx:", "Nginx:1", " nginx:1", "nginx:1 a b", "nginx:1 # note", 'nginx:1: "x"',
-                     "nginx:/^1.+/", "localhost:5000/nginx:1", "nginx:1 a:b", "nginx@sha256:abc"]:
+                     "nginx:/^1.+/", "localhost:5000/nginx:1", "nginx@sha256:abc", "nginx:1 A", "nginx:1 a/b",
+                     "nginx:1 :b", "nginx:1 a:", "nginx:1 a:b:c"]:
             with self.subTest(line=line):
                 images, problems = self.parse("images/nginx.txt", line)
                 self.assertEqual(images, [])
                 self.assertEqual([str(p) for p in problems],
-                                 ["images/nginx.txt:1: expected <image>:<tag> or <image>:<tag> <prefix>"])
+                                 ["images/nginx.txt:1: expected <image>:<tag>, optionally followed by <repository> "
+                                  "or <repository>:<prefix>"])
 
     def test_file_names(self):
         for path in ["images/Nginx.txt", "images/nginx.yaml", "images/a/nginx.txt", "images/frozen/a/nginx.txt"]:
@@ -108,13 +117,21 @@ class CheckTest(unittest.TestCase):
         self.assertEqual(check({"images/nginx.txt": ["nginx:1"], "images/web.txt": ["nginx:1"]}), [])
 
     def test_two_sources_for_one_destination(self):
-        self.assertEqual(check({"images/app.txt": ["foo/app:1 app", "bar/app:1 app"]}),
+        self.assertEqual(check({"images/app.txt": ["foo/app:1 app:app", "bar/app:1 app:app"]}),
                          [f"images/app.txt:2: {R}/app:app_1 is also the destination of foo/app:1 (images/app.txt:1)"])
         self.assertEqual(check({"images/x.txt": ["a:1"], "images/frozen/x.txt": ["b:1"]}),
                          [f"images/x.txt:1: {R}/x:1 is also the destination of b:1 (images/frozen/x.txt:1)"])
 
+    def test_a_group_spans_repositories(self):
+        self.assertEqual(check({"images/gitea.txt": ["docker:27-dind docker"], "images/docker.txt": ["docker:27-dind"]}),
+                         ["images/gitea.txt:1: duplicate of images/docker.txt:1"])
+        self.assertEqual(check({"images/gitea.txt": ["node:24.1.0 node"], "images/node.txt": ["node:24.2.0"]}), [
+            "images/node.txt:1: Renovate would update this line and images/gitea.txt:1 to the same tag, both are in "
+            'lane 24; keep one line per lane, or add "node" to the minor-lane rule in renovate.json if each of its '
+            "minor versions is a release line of its own"])
+
     def test_a_destination_tag_longer_than_128_characters(self):
-        problems = check({"images/a.txt": ["a:1 " + "p" * 127]})
+        problems = check({"images/a.txt": ["a:1 a:" + "p" * 127]})
         self.assertEqual(problems, ["images/a.txt:1: the destination tag is longer than 128 characters"])
 
     def test_lanes(self):
@@ -136,14 +153,16 @@ class CheckTest(unittest.TestCase):
 
     def test_two_lines_in_one_lane(self):
         self.assertEqual(check({"images/node.txt": ["node:24.1.0-alpine", "node:24.2.0-alpine"]}), [
-            "images/node.txt:2: Renovate would update this line and line 1 to the same tag, both are in lane 24; "
+            "images/node.txt:2: Renovate would update this line and images/node.txt:1 to the same tag, both are in "
+            "lane 24; "
             'keep one line per lane, or add "node" to the minor-lane rule in renovate.json if each of its minor '
             "versions is a release line of its own"])
 
     def test_each_minor_of_a_0x_version_is_a_lane(self):
         self.assertEqual(check({"images/otel.txt": ["otel/collector:0.161.0", "otel/collector:0.162.0"]}), [])
         self.assertEqual(check({"images/otel.txt": ["otel/collector:0.162.0", "otel/collector:0.162.1"]}), [
-            "images/otel.txt:2: Renovate would update this line and line 1 to the same tag, both are in lane 0.162; "
+            "images/otel.txt:2: Renovate would update this line and images/otel.txt:1 to the same tag, both are in "
+            "lane 0.162; "
             "keep one line per lane"])
 
     def test_minor_lanes(self):
@@ -155,10 +174,10 @@ class CheckTest(unittest.TestCase):
 
     def test_lines_renovate_keeps_apart(self):
         self.assertEqual(check({
-            "images/bitnami.txt": ["bitnamilegacy/mysql:8.3.0-debian-11-r0 mysql",
-                                   "bitnamilegacy/mysql:8.4.0-debian-12-r0 mysql"],
+            "images/bitnami.txt": ["bitnamilegacy/mysql:8.3.0-debian-11-r0 bitnami:mysql",
+                                   "bitnamilegacy/mysql:8.4.0-debian-12-r0 bitnami:mysql"],
             "images/busybox.txt": ["busybox:1.38", "busybox:1.37.0"],
-            "images/otel.txt": ["otel/collector:0.1.0 a", "otel/collector:0.1.1 b"],
+            "images/otel.txt": ["otel/collector:0.1.0 otel:a", "otel/collector:0.1.1 otel:b"],
             "images/ci.txt": ["catthehacker/ubuntu:act-22.04", "catthehacker/ubuntu:act-24.04"],
             "images/frozen/old.txt": ["node:14.16.0", "node:14.17.3"],
         }), [])
@@ -189,7 +208,8 @@ class CheckTest(unittest.TestCase):
         self.assertTrue(files.search("images/nginx.txt"))
         self.assertFalse(files.search("images/frozen/flink.txt"))
         match = re.compile(mirror.RENOVATE_MATCH.replace("(?<", "(?P<"))
-        for line in ["nginx:1.31.10-alpine", "otel/java:2.34.0 java", "a:1\t", "nginx", " nginx:1", "nginx:1 # x"]:
+        for line in ["nginx:1.31.10-alpine", "otel/java:2.34.0 otel:java", "valkey:8 valkey", "a:1\t", "nginx",
+                     " nginx:1", "nginx:1 # x", "nginx:1 a b", "nginx:1 A", "nginx:1 a:b:c"]:
             with self.subTest(line=line):
                 self.assertEqual(bool(match.search(line)), bool(mirror.LINE.fullmatch(line)))
 
@@ -323,7 +343,7 @@ class SyncTest(unittest.TestCase):
 
 class PlanTest(unittest.TestCase):
     def test_duplicates_sync_once_and_shared_destinations_not_at_all(self):
-        images, _ = mirror.parse({"images/a.txt": text("nginx:1", "nginx:1", "foo/x:1 x", "bar/x:1 x", "busybox:2")})
+        images, _ = mirror.parse({"images/a.txt": text("nginx:1", "nginx:1", "foo/x:1 a:x", "bar/x:1 a:x", "busybox:2")})
         todo, problems = mirror.plan(images)
         self.assertEqual([i.source for i in todo], ["nginx:1", "busybox:2"])
         self.assertEqual([str(p) for p in problems], [

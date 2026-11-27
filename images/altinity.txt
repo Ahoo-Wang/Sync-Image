@@ -1,2 +1,2 @@
-altinity/metrics-exporter:0.28.0 metrics_exporter
-altinity/clickhouse-operator:0.28.0 clickhouse_operator
+altinity/metrics-exporter:0.28.0 altinity:metrics_exporter
+altinity/clickhouse-operator:0.28.0 altinity:clickhouse_operator
