@@ -57,7 +57,7 @@ images/<group>.txt
 |---|---|---|
 | 1.0 及以后，semver | 主版本内兼容 | 主版本，如 node 的 22 / 24 / 26 |
 | 0.x，semver | 只在次版本内兼容 | 次版本，如 metabase 的 0.65、OTel Collector 的 0.162 |
-| 每个次版本是一条发行线 | 次版本内兼容 | 次版本，在 `renovate.json` 的 minor-lane 规则里登记（`alpine/k8s` 跟随 Kubernetes，kubectl 与集群最多差一个次版本） |
+| 每个次版本是一条发行线 | 次版本内兼容 | 次版本，在 `renovate.json` 的 minor-lane 规则里登记（`alpine/k8s` 跟随 Kubernetes，kubectl 与集群最多差一个次版本；`mongo` 的正式版本是 X.0，8.1～8.3 是快速发布版） |
 
 `images/*.txt` 的每一行就是一条线。`renovate.json` 用两条规则表达默认策略（`mirror.py` 的 `LANE_RULES`，`check` 要求它们存在）：跨主版本的升级，以及 0.x 的跨次版本升级，都要在 Dependency Dashboard 上批准，不会直接开 PR。所以 Renovate 只会在一条线内升级，不同线的行永远不会被并成一行。以前只有 node 有三条 `allowedVersions` 规则，现在两条规则覆盖所有镜像、所有大版本。
 

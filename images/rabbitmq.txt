@@ -1,0 +1,2 @@
+# 带管理界面的 RabbitMQ。
+rabbitmq:4.4.1-management-alpine

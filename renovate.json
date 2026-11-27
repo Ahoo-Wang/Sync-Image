@@ -36,12 +36,13 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Minor lanes: these upstreams start a new release line at every minor version (alpine/k8s follows Kubernetes, and kubectl supports one minor version of skew).",
+      "description": "Minor lanes: these upstreams start a new release line at every minor version (alpine/k8s follows Kubernetes, and kubectl supports one minor version of skew; MongoDB's releases are X.0, and 8.1 to 8.3 are rapid releases).",
       "matchFileNames": [
         "images/*.txt"
       ],
       "matchDepNames": [
-        "alpine/k8s"
+        "alpine/k8s",
+        "mongo"
       ],
       "matchUpdateTypes": [
         "minor"

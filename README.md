@@ -49,7 +49,7 @@ its upstream promises compatibility, and never moves a line out of it:
 |---|---|---|
 | 1.0 or later | major version | `node:24.22.3-alpine3.24` stays on 24 |
 | 0.x | minor version | `metabase/metabase:v0.65.3.7` stays on 0.65 |
-| one release line per minor version | minor version | `alpine/k8s:1.37.2` stays on 1.37 |
+| one release line per minor version | minor version | `alpine/k8s:1.37.2` stays on 1.37, `mongo:8.0.38` on 8.0 |
 
 The last row needs the image in the minor-lane rule of
 [`renovate.json`](./renovate.json).
