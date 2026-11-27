@@ -17,7 +17,8 @@
         "config/clickhouse-images.yaml",
         "config/flink-images.yaml",
         "config/kafka-ui-images.yaml",
-        "config/linyi-base-images.yaml"
+        "config/linyi-base-images.yaml",
+        "config/linyi-ci-images.yaml"
       ],
       "enabled": false
     }

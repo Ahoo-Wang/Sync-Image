@@ -1,0 +1,15 @@
+# linyi CI 里 Testcontainers 用的镜像
+#
+# linyi-k8s（ACK）与 Gitea CI 访问不到 Docker Hub，而 wow-project-template 的集成测试（Testcontainers）
+# 要在 CI 的 docker 里起 MongoDB 副本集。这里先同步到个人命名空间的单一仓库 linyi-ci，
+# 再由 linyi/cicd-assets 的 workflow 搬进公司命名空间（registry.cn-shanghai.aliyuncs.com/linyeah），
+# CI 里通过 Testcontainers 的镜像前缀与 ryuk 镜像设置只引用公司命名空间。
+#
+# 版本必须与模板一致（2026-11-26）：
+#   mongo:7.0                    server/src/integrationTest 里写死的 MongoDBContainer("mongo:7.0")
+#   testcontainers/ryuk:0.14.0   testcontainers 2.0.5 默认的 ryuk 镜像
+# tag 用「镜像名_原 tag」的复合写法，集中在一个仓库里。
+#
+# Renovate 冻结（见 renovate.json 的 packageRules）：这些版本必须与模板一致，升级时手动改 tag。
+mongo:7.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-ci:mongo_7.0"
+testcontainers/ryuk:0.14.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-ci:ryuk_0.14.0"
