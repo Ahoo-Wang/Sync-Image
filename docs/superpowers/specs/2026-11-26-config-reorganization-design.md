@@ -88,15 +88,18 @@ jobs:
 
 ### 5.2 `lint-config.yml`（新增）
 
-在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**`、`scripts/**` 和该 workflow 自身。五个步骤，任何一步失败都算检查失败：
+在 `pull_request` 和 push 到 `main` 时运行，路径过滤为 `config/**`、`scripts/**` 和该 workflow 自身。六个步骤，任何一步失败都算检查失败：
 
 1. 在真实的 `config/` 上运行 `scripts/list-groups.sh`，校验分组文件名。分组名就是文件名，一个不合规的文件会让同步 workflow 的 `plan` job 失败、所有分组都不同步，所以要在 PR 阶段拦住；
 2. 跑 `scripts/list-groups.test.sh`；
 3. 跑 `scripts/lint-config.test.sh`；
-4. 跑 `shellcheck scripts/*.sh`；
-5. 跑 `scripts/lint-config.sh`。
+4. 跑 `scripts/lint-renovate-prs.test.sh`；
+5. 跑 `shellcheck -x -P SCRIPTDIR scripts/*.sh`；
+6. 跑 `scripts/lint-config.sh`。
 
 这个检查只报告，不阻塞同步（与 `sync-images.yml` 是两个独立的 workflow）。两个 workflow 都声明了 `permissions: contents: read`。
+
+Renovate 用 `GITHUB_TOKEN` 推送分支，它触发的 `pull_request` 运行会停在 `action_required`，要人工批准才会执行。因此 `renovate.yml` 在 Renovate 之后追加一个 job，运行 `scripts/lint-renovate-prs.sh`：对每个开放的 Renovate PR 用 `git merge-tree` 算出它合入 `main` 后的 `config/`，做同样的两项检查，并把结果作为 `lint/config` 提交状态写到 PR 的 head 上。这个 job 只读取 PR 的配置文件，不执行 PR 里的任何代码；权限是 `contents: read`、`pull-requests: read`、`statuses: write`。结果在每次 Renovate 运行之后更新。
 
 ## 6. 新增脚本
 
