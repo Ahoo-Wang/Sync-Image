@@ -1,81 +1,102 @@
 # Sync-Image
 
-Mirrors upstream container images (Docker Hub, GHCR, Elastic, ...) into Aliyun
-ACR at `registry.cn-shanghai.aliyuncs.com/ahoo-mirror`, for clusters and CI runners
-that cannot reach the upstream registries.
+Mirrors container images from Docker Hub, GHCR and other upstream registries
+into Aliyun ACR, for clusters and CI runners that cannot reach those
+registries.
+
+## Pulling an image
+
+Every mirrored image is at
+
+```
+registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>:<tag>
+```
+
+Each file in [`images/`](./images) is one repository, and each line in it is
+one tag:
+
+| File | Line | Pull |
+|---|---|---|
+| `images/nginx.txt` | `nginx:1.31.10-alpine` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/nginx:1.31.10-alpine` |
+| `images/otel.txt` | `otel/autoinstrumentation-java:2.34.0 autoinstrumentation-java` | `registry.cn-shanghai.aliyuncs.com/ahoo-mirror/otel:autoinstrumentation-java_2.34.0` |
+
+A mirrored tag holds the `linux/amd64` and `linux/arm64` images of its
+upstream tag, as they are now. It is compared with upstream after every
+change to `images/` and once a day, and copied again when upstream has moved.
 
 ## Adding an image
 
-`images/<repository>.txt` lists the images mirrored into
-`registry.cn-shanghai.aliyuncs.com/ahoo-mirror/<repository>`, one per line:
+1. Open `images/<repository>.txt`, or create it for a new repository. The
+   name is lowercase letters, digits, `.`, `_` and `-`.
+2. Add a line `<image>:<tag>`. If the repository holds more than one image,
+   add a prefix: `<image>:<tag> <prefix>` is mirrored as `<prefix>_<tag>`.
+   Lines that start with `#` are comments.
+3. Open a pull request. The Check workflow marks any problem on its line.
+   After the merge, the image is in ACR within minutes.
 
-| Line | Mirrored to |
-|---|---|
-| `nginx:1.31.10-alpine` | `ahoo-mirror/nginx:1.31.10-alpine` |
-| `otel/autoinstrumentation-java:2.34.0 autoinstrumentation-java` | `ahoo-mirror/otel:autoinstrumentation-java_2.34.0` |
+## Keeping versions current
 
-A line is `<image>:<tag>`, optionally followed by a tag prefix. Lines that
-start with `#` are comments. Add a line, or a file for a new repository, and
-merge it into `main`: the image is in ACR a few minutes later.
-
-Lists whose tags must change only by hand live in
-[`images/frozen/`](./images/frozen), which Renovate does not read.
-
-## Lanes: one line per major version
-
-Each line in `images/*.txt` is a lane. Renovate keeps its tag current inside
-the range where the upstream promises compatibility, and never moves it
-beyond:
+Renovate keeps each line up to date inside its **lane**, the range in which
+its upstream promises compatibility, and never moves a line out of it:
 
 | Upstream version | Lane | Example |
 |---|---|---|
-| 1.0 and later (semver) | the major version | `node:24.22.3-alpine3.24` stays on 24 |
-| 0.x (semver) | the minor version | `metabase/metabase:v0.65.3.7` stays on 0.65 |
-| a release line per minor version | the minor version, by a minor-lane rule in [`renovate.json`](./renovate.json) | `alpine/k8s:1.37.2` stays on 1.37 |
+| 1.0 or later | major version | `node:24.22.3-alpine3.24` stays on 24 |
+| 0.x | minor version | `metabase/metabase:v0.65.3.7` stays on 0.65 |
+| one release line per minor version | minor version | `alpine/k8s:1.37.2` stays on 1.37 |
 
-A newer lane is listed on the Dependency Dashboard issue under "Pending
-Approval". Start it by adding a line, for example `docker:29-dind` next to
-`docker:27-dind`; the old lane keeps getting its updates. Approving it on the
-dashboard instead would open a pull request that replaces the old line, and
-`mirror/check` marks that pull request as failed. A tag that is not a version
-(`latest`, `act-22.04`) is never updated by Renovate.
+The last row needs the image in the minor-lane rule of
+[`renovate.json`](./renovate.json).
+
+- **New lane.** Add a line next to the old one, for example
+  `docker:29-dind` next to `docker:27-dind`. Both lanes then stay current.
+  Renovate lists newer lanes under "Pending Approval" on the Dependency
+  Dashboard issue. Don't approve them there: that opens a pull request that
+  replaces the old line, and `mirror/check` fails it.
+- **Fixed versions.** Put the list in [`images/frozen/`](./images/frozen).
+  Renovate doesn't read it, so its tags change only by hand.
+- **Tags that are not versions.** `latest` or `act-22.04` are never changed by
+  Renovate, but the mirror still follows what upstream publishes under them.
 
 ## How it works
 
-Everything is done by [`mirror.py`](./mirror.py) (Python 3, standard library
-only).
+[`mirror.py`](./mirror.py) does everything (Python 3, standard library only).
+Three workflows run it:
 
-- **Sync** ([`sync.yml`](./.github/workflows/sync.yml), `mirror.py sync`) runs
-  after every change on `main`, daily, and on demand. For each line it reads
-  the source digest with a HEAD request, which does not count against Docker
-  Hub's pull limit. If the destination was built from that digest, there is
-  nothing to do. Otherwise it copies the `linux/amd64` and `linux/arm64`
-  manifests by digest and pushes an OCI index of just those, annotated with the
-  source name and digest. Attestation manifests are left out, because ACR
-  rejects them (`unknown manifest class for application/vnd.oci.empty.v1+json`).
-  So a destination always holds what its source holds now: tags that move
-  upstream (`latest`, `27-dind`, rebuilt patch releases) are followed within a
-  day, and a failed copy is retried by the next run.
-- **Check** ([`check.yml`](./.github/workflows/check.yml), `mirror.py check`)
-  runs on every pull request and push to `main`, and marks each problem on its
-  line:
-  1. every file in `images/` is `<repository>.txt` or `frozen/<repository>.txt`,
-     in lowercase;
-  2. every line matches the grammar above, which is also the expression
-     Renovate uses (`renovate.json` must contain it verbatim), so every line
-     that is mirrored is a line Renovate can update;
-  3. every destination has one line: a repeated line is a duplicate, and two
-     images with one destination are a collision, which sync refuses;
-  4. each lane has one line: two lines of an image in the same lane, with the
-     same tag suffix, repository and prefix, would be updated to the same tag;
-  5. `renovate.json` contains the lane rules from `mirror.py`;
-  6. destination tags are at most 128 characters.
-- **Renovate** ([`renovate.yml`](./.github/workflows/renovate.yml)) runs daily.
-  It pushes with `GITHUB_TOKEN`, so the Check workflow waits for approval on its
-  pull requests. The same workflow therefore runs `mirror.py check-prs`
-  afterwards: it checks what each Renovate pull request would merge into
-  `main`, and that no lane of `main` disappears, and posts the result as the
-  `mirror/check` commit status. Nothing from the pull request is executed.
+| Workflow | Runs | Does |
+|---|---|---|
+| [Sync](./.github/workflows/sync.yml) | on changes to `main`, daily at 04:00 UTC, on demand | `mirror.py sync` |
+| [Check](./.github/workflows/check.yml) | on every pull request and push to `main` | `mirror.py check` and the unit tests |
+| [Renovate](./.github/workflows/renovate.yml) | daily at 02:00 UTC, on demand | Renovate, then `mirror.py check-prs` |
+
+**Sync.** For each line it reads the upstream digest with a HEAD request,
+which doesn't count against Docker Hub's pull limit. Every mirrored index
+records the digest it was built from. When the two match, there is nothing to
+do. Otherwise sync copies the `linux/amd64` and `linux/arm64` images by digest
+and pushes a new index with just those two. Attestation manifests are left out,
+because ACR rejects them.
+
+**Check.**
+- Every file in `images/` is named `<repository>.txt` or
+  `frozen/<repository>.txt`.
+- Every line matches the line format above. Renovate reads lines with the same
+  expression, and `renovate.json` must use it verbatim, so every mirrored line
+  can be updated.
+- Every mirrored tag comes from one line. A destination with two sources is
+  never synced.
+- Every lane has one line. Renovate would update two lines in the same lane to
+  the same tag.
+- `renovate.json` contains the lane rules.
+- Mirrored tags are at most 128 characters.
+
+**Renovate pull requests.** Renovate pushes with `GITHUB_TOKEN`, so the Check
+workflow waits for approval on its pull requests. After each Renovate run,
+`mirror.py check-prs` checks what each of them would merge into `main`,
+including that no lane of `main` disappears, and posts the result as the
+`mirror/check` commit status. It only reads the files in the pull request; it
+never runs them.
+
+[`docs/design.md`](./docs/design.md) explains why it works this way.
 
 ## Running it locally
 
@@ -88,7 +109,11 @@ python3 -m unittest
 ```
 
 `sync` needs [regctl](https://github.com/regclient/regclient) and a login to
-ACR (`regctl registry login registry.cn-shanghai.aliyuncs.com`):
+ACR:
+
+```bash
+regctl registry login registry.cn-shanghai.aliyuncs.com
+```
 
 ```bash
 python3 mirror.py sync
@@ -96,12 +121,16 @@ python3 mirror.py sync
 
 ## Maintenance
 
-- Secrets: `ALIYUN_CR_USERNAME` and `ALIYUN_CR_PASSWORD` (required);
-  `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (optional, for a higher Docker Hub
-  pull limit).
-- The regctl release is pinned in [`.regctl-version`](./.regctl-version), and
+- **Secrets.** `ALIYUN_CR_USERNAME` and `ALIYUN_CR_PASSWORD` are required.
+  `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` are optional; with them, Docker
+  Hub allows more pulls.
+- **A failed sync.** The run's summary and annotations list each image that
+  failed, with the reason. The next daily run tries again; to retry sooner,
+  run the Sync workflow by hand. If Docker Hub refuses with a rate-limit error
+  (HTTP 429), set the Docker Hub secrets.
+- **A Renovate pull request without checks.** Read its `mirror/check` status.
+- **regctl.** The version is in [`.regctl-version`](./.regctl-version), and
   Renovate updates it.
-- `GITHUB_TOKEN` cannot push changes to `.github/workflows/`, so the actions
-  used there are updated by hand. The Dependency Dashboard issue lists the
-  updates.
-- [`docs/design.md`](./docs/design.md) explains why it works this way.
+- **GitHub Actions.** `GITHUB_TOKEN` cannot push changes to
+  `.github/workflows/`, so the actions there are updated by hand. The
+  Dependency Dashboard issue lists the available updates.
