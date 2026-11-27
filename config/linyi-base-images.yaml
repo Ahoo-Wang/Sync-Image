@@ -9,6 +9,12 @@
 #   nginx 1.23.3 / latest   4 个仓
 #   node 14.16.0 / 14.17.3 / 16.8.0   3 个仓
 #   busybox latest          1 个仓
+#
+# 2026-11-27 追加：wow-project-template 的集成测试（Testcontainers）在 Gitea CI 里要用的两个镜像。
+#   mongo 7.0                    集成测试里写死的 MongoDBContainer("mongo:7.0")
+#   testcontainers/ryuk 0.14.0   testcontainers 2.0.5 默认的 ryuk 镜像（版本跟着 testcontainers 走）
+# 这两个 tag 已存在（当时从本机推的 amd64 单架构），所以下面的同步会跳过；留着是为了以后版本升级时走这里。
+#
 # tag 用「镜像名_原 tag」的复合写法，集中在一个仓库里。
 #
 # Renovate 冻结（见 renovate.json 的 packageRules）：这些版本必须与存量 Dockerfile 一致，升级时手动改 tag。
@@ -19,3 +25,5 @@ node:14.16.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:node_14.16.0"
 node:14.17.3: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:node_14.17.3"
 node:16.8.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:node_16.8.0"
 busybox:latest: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:busybox_latest"
+mongo:7.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:mongo_7.0"
+testcontainers/ryuk:0.14.0: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:ryuk_0.14.0"
