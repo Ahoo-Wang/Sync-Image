@@ -61,8 +61,9 @@ The last row needs the image in the minor-lane rule of
   replaces the old line, and `mirror/check` fails it.
 - **Fixed versions.** Put the list in [`images/frozen/`](./images/frozen).
   Renovate doesn't read it, so its tags change only by hand.
-- **Tags that are not versions.** `latest` or `act-22.04` are never changed by
-  Renovate, but the mirror still follows what upstream publishes under them.
+- **Tags that are not versions.** `latest` or `ubuntu-24.04-v26.11.25` are
+  never changed by Renovate, but the mirror still follows what upstream
+  publishes under them.
 
 ## How it works
 
