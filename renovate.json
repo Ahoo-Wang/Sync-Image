@@ -20,6 +20,24 @@
         "config/linyi-base-images.yaml"
       ],
       "enabled": false
+    },
+    {
+      "description": "node 22: update only within major 22, so the 22/24/26 lines never collapse into one",
+      "matchDepNames": ["node"],
+      "matchCurrentVersion": "/^22\\./",
+      "allowedVersions": "/^22\\./"
+    },
+    {
+      "description": "node 24: update only within major 24, so the 22/24/26 lines never collapse into one",
+      "matchDepNames": ["node"],
+      "matchCurrentVersion": "/^24\\./",
+      "allowedVersions": "/^24\\./"
+    },
+    {
+      "description": "node 26: update only within major 26, so the 22/24/26 lines never collapse into one",
+      "matchDepNames": ["node"],
+      "matchCurrentVersion": "/^26\\./",
+      "allowedVersions": "/^26\\./"
     }
   ],
   "customManagers": [

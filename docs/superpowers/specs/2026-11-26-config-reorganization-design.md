@@ -237,6 +237,6 @@ busybox:latest: "registry.cn-shanghai.aliyuncs.com/ahoo/linyi-base:busybox_lates
 
 ## 11. 已知限制
 
-- **同一镜像多行仍可能被 Renovate 并成一个版本。** 例如 `nodejs` 的 22/24/26 和 `bitnami` 的 MySQL 8/9：Renovate 的跨大版本 PR 会把该镜像的所有行改成同一个版本。这靠两点把关：不合并不想升的 PR；`lint-config` 会在产生重复行时标红。
+- **同一镜像多行仍可能被 Renovate 并成一个版本。** Renovate 的跨大版本 PR 会把该镜像的所有行改成同一个版本。`nodejs` 的 22/24/26 已经用 `packageRules` 挡住：每一行只在自己所在的大版本内升级。`bitnami` 的 MySQL 8/9 不需要处理，`bitnamilegacy` 仓库已归档，没有新版本。以后再给同一个镜像加多行时，照 node 的做法加规则，或者不合并不想升的 PR。
 - **ACR 中的历史 tag 不会减少。** 本次整理只让它不再增长。清理存量需要单独进行，并先确认哪些还在用。
 - `nodejs-images.yaml` 的分组名与仓库 `ahoo/node` 不一致，本次不改名，避免让开放的 Renovate PR 重建。
