@@ -27,7 +27,9 @@ Aliyun ACR (`registry.cn-shanghai.aliyuncs.com/ahoo`).
 - [Renovate](./renovate.json) keeps image tags up to date via
   `customManagers`; merging its PRs triggers the sync. Frozen groups
   (`clickhouse`, `flink`, `kafka-ui`, `linyi-base`) are switched off in
-  `packageRules`: change their tags by hand.
+  `packageRules`: change their tags by hand. The three `node` lines (22, 24,
+  26) each update only within their own major, so a major-update PR cannot
+  turn them into duplicates.
 - [`.github/workflows/lint-config.yml`](./.github/workflows/lint-config.yml)
   checks group file names, runs the script tests and shellcheck, and reports
   duplicate mapping lines. Renovate bumps every line of the same image to the
