@@ -18,7 +18,7 @@ R = mirror.REGISTRY
 OCI_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
 DOCKER_MANIFEST = "application/vnd.docker.distribution.manifest.v2+json"
 MINOR_LANES = {"matchFileNames": ["images/*.txt"], "matchDepNames": ["alpine/k8s"], "matchUpdateTypes": ["minor"],
-               "dependencyDashboardApproval": True}
+               "dependencyDashboardApproval": True, "additionalBranchPrefix": mirror.NEW_LANE_PREFIX}
 RENOVATE = json.dumps({
     "packageRules": [*mirror.LANE_RULES, MINOR_LANES],
     "customManagers": [{
@@ -197,6 +197,16 @@ class CheckTest(unittest.TestCase):
             "renovate.json: needs the packageRules LANE_RULES (see mirror.py), which keep every line in its lane"])
         files = {"images/nginx.txt": "nginx:1\n"}
         self.assertEqual([str(p) for p in mirror.check(files)], ["renovate.json: missing"])
+
+    def test_updates_to_a_new_lane_get_branches_of_their_own(self):
+        lists = {"images/nginx.txt": ["nginx:1"]}
+        for index in (0, 2):  # a default lane rule, and the minor-lane rule
+            with self.subTest(rule=index):
+                config = json.loads(RENOVATE)
+                del config["packageRules"][index]["additionalBranchPrefix"]
+                problems = check(lists, json.dumps(config))
+                self.assertEqual(len(problems), 1)
+                self.assertIn("renovate.json", problems[0])
 
     def test_the_repository_renovate_json_uses_the_grammar(self):
         minor_lanes, problems = mirror.check_renovate((mirror.ROOT / "renovate.json").read_text())
