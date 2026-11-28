@@ -1,6 +1,6 @@
 groundnuty/k8s-wait-for:v2.0 signoz:k8s-wait-for
 signoz/signoz-schema-migrator:v0.144.15 signoz:signoz-schema-migrator
 signoz/frontend:1.1.0 signoz:frontend
-signoz/signoz-otel-collector:v0.144.18 signoz:signoz-otel-collector
+signoz/signoz-otel-collector:v0.144.19 signoz:signoz-otel-collector
 signoz/alertmanager:0.23.9 signoz:alertmanager
 signoz/query-service:0.76.2 signoz:query-service
