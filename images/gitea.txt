@@ -15,5 +15,5 @@ docker:27-dind docker
 # 不要 -full 变体（约 19GB）。
 gitea/runner-images:ubuntu-24.04-v26.11.25 runner-images
 gitea/runner-images:ubuntu-22.04-v26.11.25 runner-images
-maven:3.9-eclipse-temurin-21 maven
+maven:3.10-eclipse-temurin-21 maven
 alpine/k8s:1.37.2 alpine-k8s
