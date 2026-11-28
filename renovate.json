@@ -63,7 +63,10 @@
       ],
       "versioning": "regex:^ubuntu-(?<compatibility>\\d+\\.\\d+)-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "dependencyDashboardApproval": false,
-      "additionalBranchPrefix": ""
+      "additionalBranchPrefix": "",
+      "prBodyNotes": [
+        "Before merging, check that the new image still ships Node.js 24: the Gitea runner on linyi-k8s sets `runner.node_download: false` and runs JS actions with the image's Node.js."
+      ]
     }
   ],
   "customManagers": [
