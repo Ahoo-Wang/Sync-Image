@@ -6,7 +6,7 @@ gitea/gitea:28.4.0-rootless
 valkey/valkey:9.2.1-alpine valkey
 
 # Gitea Actions runner 和它的 DinD sidecar
-gitea/runner:6.0.1 gitea-runner
+gitea/runner:6.1.0 gitea-runner
 docker:29-dind docker
 docker:27-dind docker
 
