@@ -59,7 +59,7 @@ images/<group>.txt
 | 0.x，semver | 只在次版本内兼容 | 次版本，如 metabase 的 0.65、OTel Collector 的 0.162 |
 | 每个次版本是一条发行线 | 次版本内兼容 | 次版本，在 `renovate.json` 的 minor-lane 规则里登记（`alpine/k8s` 跟随 Kubernetes，kubectl 与集群最多差一个次版本；`mongo` 的正式版本是 X.0，8.1～8.3 是快速发布版） |
 
-`images/*.txt` 的每一行就是一条线。`renovate.json` 用两条规则表达默认策略（`mirror.py` 的 `LANE_RULES`，`check` 要求它们存在）：跨主版本的升级，以及 0.x 的跨次版本升级，都要在 Dependency Dashboard 上批准，不会直接开 PR。所以 Renovate 只会在一条线内升级，不同线的行永远不会被并成一行。以前只有 node 有三条 `allowedVersions` 规则，现在两条规则覆盖所有镜像、所有大版本。
+`images/*.txt` 的每一行就是一条线。`renovate.json` 用两条规则表达默认策略（`mirror.py` 的 `LANE_RULES`，`check` 要求它们存在）：跨主版本的升级，以及 0.x 的跨次版本升级，都要在 Dependency Dashboard 上批准，不会直接开 PR。所以 Renovate 只会在一条线内升级，不同线的行永远不会被并成一行。跨线的升级还要走自己的分支（`additionalBranchPrefix: "new-lane-"`，分支名形如 `renovate/new-lane-node-26.x`）：Renovate 按目标版本给分支命名，node 24→26 和 node 26.13.0→26.13.1 原本都叫 `renovate/node-26.x`，补丁版本就会和跨线升级一起卡在审批上；已有的 PR 也会把跨线的改动并进来（2026-11-28 第一次在新布局上运行时就是这样）。`check` 要求每条线规则和 minor-lane 规则都带这个前缀。以前只有 node 有三条 `allowedVersions` 规则，现在两条规则覆盖所有镜像、所有大版本。
 
 新的一条线靠人加一行：Dashboard 的「Pending Approval」列出上游的新主版本，作为提醒。如果在 Dashboard 上批准，Renovate 会开一个**替换**旧行的 PR，旧的线就丢了；所以 `check-prs` 比较合入前后的线，丢了线的 PR 标为 failure，提示改为新增一行。Renovate 只改 tag、不删行，所以合入后少了某条线，就说明它把一行挪到了别的线上。
 

@@ -57,8 +57,10 @@ The last row needs the image in the minor-lane rule of
 - **New lane.** Add a line next to the old one, for example
   `docker:29-dind` next to `docker:27-dind`. Both lanes then stay current.
   Renovate lists newer lanes under "Pending Approval" on the Dependency
-  Dashboard issue. Don't approve them there: that opens a pull request that
-  replaces the old line, and `mirror/check` fails it.
+  Dashboard issue, on `renovate/new-lane-*` branches of their own, so they
+  never hold up the updates inside a lane. Don't approve them there: that
+  opens a pull request that replaces the old line, and `mirror/check` fails
+  it.
 - **Fixed versions.** Put the list in [`images/frozen/`](./images/frozen).
   Renovate doesn't read it, so its tags change only by hand.
 - **Tags that are not versions.** `latest` or `act-22.04` are never changed

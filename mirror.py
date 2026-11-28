@@ -64,11 +64,18 @@ VERSION = re.compile(r"v?(?P<release>\d+(?:\.\d+)*)(?P<suffix>-.+)?")
 # renovate.json must contain these rules (descriptions aside). An image whose
 # upstream starts a new release line at every minor version (Kubernetes) goes
 # in a minor-lane rule: matchUpdateTypes ["minor"], dependencyDashboardApproval
-# true and the image in matchDepNames.
+# true, the image in matchDepNames and additionalBranchPrefix NEW_LANE_PREFIX.
+#
+# Updates to another lane get branches of their own. Renovate names a branch
+# after the target version, so node 24 -> 26 and node 26.13.0 -> 26.13.1 would
+# share renovate/node-26.x, and the patch would wait for approval with it, or
+# an existing pull request would take in the move.
+NEW_LANE_PREFIX = "new-lane-"
 LANE_RULES = [
-    {"matchFileNames": ["images/*.txt"], "matchUpdateTypes": ["major"], "dependencyDashboardApproval": True},
+    {"matchFileNames": ["images/*.txt"], "matchUpdateTypes": ["major"], "dependencyDashboardApproval": True,
+     "additionalBranchPrefix": NEW_LANE_PREFIX},
     {"matchFileNames": ["images/*.txt"], "matchCurrentVersion": "/^v?0\\./", "matchUpdateTypes": ["minor"],
-     "dependencyDashboardApproval": True},
+     "dependencyDashboardApproval": True, "additionalBranchPrefix": NEW_LANE_PREFIX},
 ]
 
 # Every destination index records the source it was built from. A run copies
@@ -251,6 +258,10 @@ def check_renovate(text: Optional[str]) -> Tuple[Set[str], List[Problem]]:
         if rule.get("matchUpdateTypes") == ["minor"] and rule.get("dependencyDashboardApproval") is True \
                 and "matchCurrentVersion" not in rule:
             minor_lanes.update(rule.get("matchDepNames", []))
+            if rule.get("additionalBranchPrefix") != NEW_LANE_PREFIX:
+                problems.append(Problem("renovate.json", 0, f'the minor-lane rule for {", ".join(rule.get("matchDepNames", []))} '
+                                                            f'needs "additionalBranchPrefix": "{NEW_LANE_PREFIX}", so '
+                                                            "updates to a new lane get branches of their own"))
     return minor_lanes, problems
 
 
