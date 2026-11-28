@@ -1,1 +1,1 @@
-ghcr.io/metalbear-co/mirrord:3.291.2
+ghcr.io/metalbear-co/mirrord:3.292.0
