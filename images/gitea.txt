@@ -8,7 +8,7 @@ valkey/valkey:9.2.1-alpine valkey
 # Gitea Actions runner 和它的 DinD sidecar
 gitea/runner:6.0.1 gitea-runner
 docker:29-dind docker
-docker:27-dind docker
+docker:29-dind docker
 
 # Gitea Actions 的 job 容器。runner-images 是 Gitea 官方的 job 镜像，tag 带发布日期、内容固定，
 # 所以 job 可以复现；Renovate 在同一个 Ubuntu 版本内提出升到更新日期的 PR（见 renovate.json）。
