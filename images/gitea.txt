@@ -10,8 +10,9 @@ gitea/runner:6.0.1 gitea-runner
 docker:29-dind docker
 docker:27-dind docker
 
-# Gitea Actions 的 job 容器。runner-images 是 Gitea 官方的 job 镜像，tag 带发布日期，
-# 固定不变，所以 job 可以复现；不要 -full 变体（约 19GB）。
+# Gitea Actions 的 job 容器。runner-images 是 Gitea 官方的 job 镜像，tag 带发布日期、内容固定，
+# 所以 job 可以复现；Renovate 在同一个 Ubuntu 版本内提出升到更新日期的 PR（见 renovate.json）。
+# 不要 -full 变体（约 19GB）。
 gitea/runner-images:ubuntu-24.04-v26.11.25 runner-images
 gitea/runner-images:ubuntu-22.04-v26.11.25 runner-images
 maven:3.9-eclipse-temurin-21 maven

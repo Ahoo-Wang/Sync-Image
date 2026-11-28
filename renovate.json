@@ -48,6 +48,17 @@
         "minor"
       ],
       "dependencyDashboardApproval": true
+    },
+    {
+      "description": "gitea/runner-images tags are ubuntu-<release>-v<yy.mm.dd>. Keep each Ubuntu release and move to its newest dated build; a date is not a compatibility boundary, so a new year needs no approval.",
+      "matchFileNames": [
+        "images/*.txt"
+      ],
+      "matchDepNames": [
+        "gitea/runner-images"
+      ],
+      "versioning": "regex:^ubuntu-(?<compatibility>\\d+\\.\\d+)-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
+      "dependencyDashboardApproval": false
     }
   ],
   "customManagers": [
