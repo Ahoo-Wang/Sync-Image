@@ -13,6 +13,8 @@ docker:27-dind docker
 # Gitea Actions 的 job 容器。runner-images 是 Gitea 官方的 job 镜像，tag 带发布日期、内容固定，
 # 所以 job 可以复现；Renovate 在同一个 Ubuntu 版本内提出升到更新日期的 PR（见 renovate.json）。
 # 不要 -full 变体（约 19GB）。
+# gitea-system 的 runner 设了 runner.node_download: false，JS action 用镜像自带的 Node.js 24
+#（v26.11.25 里是 v24.22.3）。合并 runner-images 的升级前，先确认新镜像里仍是 Node.js 24。
 gitea/runner-images:ubuntu-24.04-v26.11.25 runner-images
 gitea/runner-images:ubuntu-22.04-v26.11.25 runner-images
 maven:3.10-eclipse-temurin-21 maven
